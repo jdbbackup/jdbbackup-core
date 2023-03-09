@@ -17,6 +17,8 @@ import com.fathzer.jdbbackup.DBDumper;
  * <br>Data base dump is obtained through a command line.
  */
 public abstract class DBDumperFromProcess implements DBDumper {
+	/** Constructor.
+	 */
 	protected DBDumperFromProcess() {
 		super();
 	}
