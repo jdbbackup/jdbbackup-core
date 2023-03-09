@@ -21,6 +21,7 @@
 		<check-dependencies-java-version>${maven.compiler.target}</check-dependencies-java-version>
 
 		<slf-version>1.7.36</slf-version>
+		<sonar.organization>jdbbackup</sonar.organization>
 	</properties>
 
 	<dependencies>
