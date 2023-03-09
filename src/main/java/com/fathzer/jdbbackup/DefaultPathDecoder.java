@@ -16,6 +16,8 @@ import java.util.regex.Pattern;
  */
 public class DefaultPathDecoder {
 	private static final Pattern PATTERN = Pattern.compile("\\{(\\p{Lower}+)=([^\\}]+)\\}");
+	/** An instance with the default settings.
+	 */
 	public static final DefaultPathDecoder INSTANCE = new DefaultPathDecoder();
 
 	/** Constructor.
