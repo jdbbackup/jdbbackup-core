@@ -30,11 +30,11 @@ public interface DestinationManager<T> {
 	 */
 	T validate(final String path, Function<String,CharSequence> extensionBuilder);
 	
-	/** Sends the backup file to its final destination at the path passed in {@link #setDestinationPath}.
-	 * <br>It is guaranteed that {@link DestinationManager#setProxy(ProxyOptions)} will be called before this method.
+	/** Sends the backup file to its final destination at the path passed in {@link #validate(String, Function)}.
+	 * <br>It is guaranteed that {@link DestinationManager#setProxy(ProxySettings)} will be called before this method.
 	 * @param in The input stream on the temporary file to save
 	 * @param size The number of bytes to save (the size of the temporary file). The manager is free to ignore this information and save all bytes available in the input stream.
-	 * @param destination The destination that was returned by {@link #validate(URI, Function)}
+	 * @param destination The destination that was returned by {@link #validate(String, Function)}
 	 * @return a message indicating where the file was sent
 	 * @throws IOException If an error occurs while sending the file
 	 * @see #setProxy(ProxyOptions)
