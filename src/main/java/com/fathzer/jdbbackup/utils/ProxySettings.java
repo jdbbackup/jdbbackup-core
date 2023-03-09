@@ -1,6 +1,7 @@
 package com.fathzer.jdbbackup.utils;
 
 import java.net.InetSocketAddress;
+import java.net.PasswordAuthentication;
 import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -11,7 +12,7 @@ import java.net.Proxy.Type;
 public class ProxySettings {
 	private String host;
 	private int port;
-	private Login login;
+	private PasswordAuthentication login;
 	
 	private ProxySettings() {
 		// To make it compatible with jackson databind deserialization
@@ -22,7 +23,7 @@ public class ProxySettings {
 	 * @param port The proxy's port
 	 * @param login The login used for authentication (null if no authentication)
 	 */
-	public ProxySettings(String host, int port, Login login) {
+	public ProxySettings(String host, int port, PasswordAuthentication login) {
 		this.host = host;
 		this.port = port;
 		this.login = login;
@@ -48,7 +49,7 @@ public class ProxySettings {
 			if (result.host==null) {
 				throw new IllegalArgumentException("missing host");
 			}
-			result.login = Login.fromString(uri.getUserInfo());
+			result.login = LoginParser.fromString(uri.getUserInfo());
 		} catch (URISyntaxException e) {
 			throw new IllegalArgumentException("argument should be of the form [user:pwd@]host:port",e);
 		}
@@ -79,14 +80,14 @@ public class ProxySettings {
 	/** Gets the proxy's user login.
 	 * @return a string or null if no authentication is set
 	 */
-	public Login getLogin() {
+	public PasswordAuthentication getLogin() {
 		return login;
 	}
 	
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		if (this.login!=null) {
-			builder.append(this.login.toString());
+			builder.append(LoginParser.toString(this.login));
 			builder.append('@');
 		}
 		builder.append(this.host).append(':').append(this.port);

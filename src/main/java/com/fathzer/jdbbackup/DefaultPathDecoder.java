@@ -19,6 +19,19 @@ public class DefaultPathDecoder {
 	/** An instance with the default settings.
 	 */
 	public static final DefaultPathDecoder INSTANCE = new DefaultPathDecoder();
+	
+	/** An exception that denotes a illegal pattern in path.
+	 */
+	public static class IllegalNamePatternException extends IllegalArgumentException {
+		private static final long serialVersionUID = 1L;
+
+		/** Constructor.
+		 * @param message The exception message
+		 */
+		public IllegalNamePatternException(String message) {
+			super(message);
+		}
+	}
 
 	/** Constructor.
 	 */
@@ -31,7 +44,7 @@ public class DefaultPathDecoder {
 	 * @return The decoded path
 	 * @throws IllegalNamePatternException if the path has wrong format
 	 */
-	public String decodePath(String path) throws IllegalNamePatternException {
+	public String decodePath(String path) {
 		Matcher m = PATTERN.matcher(path);
 		StringBuilder sb = new StringBuilder();
 		int previous = 0;
@@ -54,7 +67,7 @@ public class DefaultPathDecoder {
 	 * @return The decoded path
 	 * @throws IllegalNamePatternException if the path has wrong format
 	 */
-	public String decodePath(String path, Function<String,CharSequence> extensionManager) throws IllegalNamePatternException {
+	public String decodePath(String path, Function<String,CharSequence> extensionManager) {
 		return extensionManager.apply(decodePath(path)).toString();
 	}
 
@@ -65,7 +78,7 @@ public class DefaultPathDecoder {
 	 * @return The decoded pattern.
 	 * @throws IllegalNamePatternException If the name in not a valid name or value is not a wlid valid for <i>name</i> pattern.
 	 */
-	protected CharSequence decode(String name, String value) throws IllegalNamePatternException {
+	protected CharSequence decode(String name, String value) {
 		if ("d".equals(name)) {
 			try {
 				return new SimpleDateFormat(value).format(new Date());

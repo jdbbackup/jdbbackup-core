@@ -3,6 +3,7 @@ package com.fathzer.jdbbackup.utils;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.net.InetSocketAddress;
+import java.net.PasswordAuthentication;
 
 import org.junit.jupiter.api.Test;
 
@@ -11,28 +12,28 @@ class ProxySettingsTest {
 	@Test
 	void test() {
 		ProxySettings settings = ProxySettings.fromString("user:pwd@host:3128");
-		assertEquals("user", settings.getLogin().getUser());
-		assertEquals("pwd", settings.getLogin().getPassword());
+		assertEquals("user", settings.getLogin().getUserName());
+		assertEquals("pwd", new String(settings.getLogin().getPassword()));
 		assertEquals("host", settings.getHost());
 		assertEquals(3128, settings.getPort());
 		
-		settings = new ProxySettings("host", 3128, new Login("user", "pwd")); 
-		assertEquals("user", settings.getLogin().getUser());
-		assertEquals("pwd", settings.getLogin().getPassword());
+		settings = new ProxySettings("host", 3128, new PasswordAuthentication("user", "pwd".toCharArray())); 
+		assertEquals("user", settings.getLogin().getUserName());
+		assertEquals("pwd", new String(settings.getLogin().getPassword()));
 		assertEquals("host", settings.getHost());
 		assertEquals(3128, settings.getPort());
 		
 		// Test toString hides the password
 		ProxySettings fromToString = ProxySettings.fromString(settings.toString());
-		assertEquals(settings.getLogin().getUser(), fromToString.getLogin().getUser());
+		assertEquals(settings.getLogin().getUserName(), fromToString.getLogin().getUserName());
 		assertEquals(settings.getHost(), fromToString.getHost());
 		assertEquals(settings.getPort(), fromToString.getPort());
 		assertNotEquals(settings.getLogin().getPassword(), fromToString.getLogin().getPassword());
 
 		// Test with no password
 		settings = ProxySettings.fromString("user@host:2000");
-		assertEquals("user", settings.getLogin().getUser());
-		assertNull(settings.getLogin().getPassword());
+		assertEquals("user", settings.getLogin().getUserName());
+		assertEquals(0, settings.getLogin().getPassword().length);
 		assertEquals("host", settings.getHost());
 		assertEquals(2000, settings.getPort());
 		assertEquals("user@host:2000", settings.toString());
@@ -64,7 +65,7 @@ class ProxySettingsTest {
 
 	@Test
 	void loginTest() {
-		assertNull(Login.fromString(" "));
-		assertNull(Login.fromString(null));
+		assertNull(LoginParser.fromString(" "));
+		assertNull(LoginParser.fromString(null));
 	}
 }

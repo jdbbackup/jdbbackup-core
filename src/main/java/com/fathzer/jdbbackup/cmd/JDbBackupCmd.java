@@ -14,7 +14,7 @@ import picocli.CommandLine.Parameters;
 /** A command line tool to perform backup.
  */
 @Command(name="java com.fathzer.jdbbackup.cmd.JDbBackupCmd", mixinStandardHelpOptions = true, description = "Saves a database to a destination", usageHelpWidth = 160)
-public class JDbBackupCmd implements Callable<Integer> {
+public class JDbBackupCmd implements Callable<Integer>, CommandLineSupport {
 	@Parameters(index="0", description="Data base address (for example mysql://user:pwd@host:port/db")
     private String db;
 	@Parameters(index="1", description = "Destination (example sftp://user:pwd@host/filepath)")
@@ -22,11 +22,14 @@ public class JDbBackupCmd implements Callable<Integer> {
 	@Option(names={"-p","--proxy"}, description="The proxy used for the backup, format is [user[:pwd]@]host:port", converter = ProxySettingsConverter.class)
 	private ProxySettings proxy;
 	
+	/** Launches the command.
+	 * @param args The command arguments. Run the class without any arguments to know what are the available arguments.
+	 */
 	public static void main(String... args) {
 		System.exit(new CommandLine(new JDbBackupCmd()).execute(args));
     }
 	
-	@SuppressWarnings("java:S106")
+	@Override
 	public Integer call() throws Exception {
 		try {
 			new JDbBackup().backup(proxy, db, dest);
@@ -38,20 +41,5 @@ public class JDbBackupCmd implements Callable<Integer> {
         	err(e);
         	return 2;
         }
-	}
-	
-	@SuppressWarnings("java:S106")
-	public static void out(String message) {
-		System.out.println(message);
-	}
-	
-	@SuppressWarnings("java:S106")
-	public static void err(String message) {
-		System.err.println(message);
-	}
-	
-	@SuppressWarnings("java:S4507")
-	public static void err(Throwable e) {
-		e.printStackTrace();
 	}
 }

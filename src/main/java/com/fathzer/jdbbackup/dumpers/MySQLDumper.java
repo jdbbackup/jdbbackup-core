@@ -1,10 +1,11 @@
 package com.fathzer.jdbbackup.dumpers;
 
+import java.net.PasswordAuthentication;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fathzer.jdbbackup.utils.Login;
+import com.fathzer.jdbbackup.utils.LoginParser;
 
 /** A DBSaver that saves MYSQL database.
  * <br>It requires mysqldump to be installed on the machine.
@@ -20,16 +21,16 @@ public class MySQLDumper extends DBDumperFromProcess {
 		}
 		final int port = getPort(params);
 		final String dbName = getDBName(params);
-		final Login login = Login.fromString(params.getUserInfo());  
-		if (isEmpty(dbName) || isEmpty(params.getHost()) || port<=0 || login==null || isEmpty(login.getUser()) || isEmpty(login.getPassword())) {
+		final PasswordAuthentication login = LoginParser.fromString(params.getUserInfo());  
+		if (isEmpty(dbName) || isEmpty(params.getHost()) || port<=0 || login==null || isEmpty(login.getUserName()) || login.getPassword().length==0) {
 			throw new IllegalArgumentException("Invalid URI");
 		}
 		final List<String> commands = new ArrayList<>();
 		commands.add("mysqldump");
 		commands.add("--host="+params.getHost());
 		commands.add("--port="+port);
-		commands.add("--user="+login.getUser());
-		commands.add("--password="+login.getPassword());
+		commands.add("--user="+login.getUserName());
+		commands.add("--password="+new String(login.getPassword()));
 		commands.add("--add-drop-database");
 		commands.add(dbName);
 		return commands;

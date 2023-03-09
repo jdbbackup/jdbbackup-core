@@ -9,6 +9,7 @@ import com.fathzer.jdbbackup.utils.ProxySettings;
 /** An abstract class to manage where backup are saved.
  */
 public interface DestinationManager<T> {
+	/** The / character.*/
 	public static final char URI_PATH_SEPARATOR = '/';
 	
 	/** Sets the proxy configuration of this manager.

@@ -37,10 +37,14 @@ public class JDbBackup {
 		ServiceLoader.load(DBDumper.class, classLoader).forEach(s -> SAVERS.put(s.getScheme(), s));
 	}
 	
-	public JDbBackup() {
-		super();
-	}
-	
+	/** Makes a backup.
+	 * @param proxySettings The proxy used to save the data base content
+	 * @param source The address of the data base source (its format depends on the data base type)
+	 * @param destination The address of the backup destination (its format depends on the data base type)
+	 * @return An information string
+	 * @throws IOException If something went wrong.
+	 * @throws IllegalArgumentException if arguments are wrong.
+	 */
 	public String backup(ProxySettings proxySettings, String source, String destination) throws IOException {
 		if (source==null || destination==null) {
 			throw new IllegalArgumentException();
@@ -58,6 +62,10 @@ public class JDbBackup {
 		}
 	}
 	
+	/** Creates the temporary file that will be used by the DBDumper to create the database backup.
+	 * @return a File.
+	 * @throws IOException If something went wrong.
+	 */
 	protected File createTempFile() throws IOException {
 		final File tmpFile = Files.createTempFile("JDBBackup", ".gz").toFile();
 		if(!FileSystems.getDefault().supportedFileAttributeViews().contains("posix")) {
@@ -85,7 +93,7 @@ public class JDbBackup {
 		}
 	}
 	
-	protected <T> DestinationManager<T> getDestinationManager(Destination destination) {
+	private <T> DestinationManager<T> getDestinationManager(Destination destination) {
 		@SuppressWarnings("unchecked")
 		final DestinationManager<T> manager = (DestinationManager<T>) MANAGERS.get(destination.getScheme());
 		if (manager==null) {
@@ -94,7 +102,7 @@ public class JDbBackup {
 		return manager;
 	}
 	
-	protected DBDumper getDBDumper(String dbType) {
+	private DBDumper getDBDumper(String dbType) {
 		final DBDumper saver = SAVERS.get(dbType);
 		if (saver==null) {
 			throw new IllegalArgumentException("Unknown database type: "+dbType);

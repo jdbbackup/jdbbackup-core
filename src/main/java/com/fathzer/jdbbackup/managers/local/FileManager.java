@@ -16,9 +16,6 @@ import com.fathzer.jdbbackup.utils.ProxySettings;
  * <br>It uses an instance of {@link DefaultPathDecoder} in order to build the destination path.
  */
 public class FileManager implements DestinationManager<Path> {
-	public FileManager() {
-		super();
-	}
 
 	@Override
 	public void setProxy(ProxySettings options) {
