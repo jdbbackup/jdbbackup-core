@@ -37,7 +37,7 @@ public interface DestinationManager<T> {
 	 * @param destination The destination that was returned by {@link #validate(String, Function)}
 	 * @return a message indicating where the file was sent
 	 * @throws IOException If an error occurs while sending the file
-	 * @see #setProxy(ProxyOptions)
+	 * @see #setProxy(ProxySettings)
 	 */
 	String send(final InputStream in, long size, T destination) throws IOException;
 }
