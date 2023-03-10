@@ -10,7 +10,7 @@ public abstract class LoginParser {
 		super();
 	}
 	
-	/** Converts a user:pwd formatted string to a Login. 
+	/** Converts a user:pwd formatted string to a PasswordAuthentication login. 
 	 * @param userAndPwd The string. Its format should be user:pwd. pwd can be omitted.
 	 * @return The login or null if the input String is empty or null
 	 */
@@ -23,6 +23,11 @@ public abstract class LoginParser {
 		}
 	}
 	
+	/** Converts a PasswordAuthentication login to a String.
+	 * <br>The password is replaced by stars in the string.
+	 * @param login The login.
+	 * @return a String
+	 */
 	public static String toString(PasswordAuthentication login) {
 		StringBuilder builder = new StringBuilder();
 		builder.append(login.getUserName());
