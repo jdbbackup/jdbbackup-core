@@ -34,7 +34,7 @@ public class FileManager implements DestinationManager<Path> {
 	}
 
 	@Override
-	public String getProtocol() {
+	public String getScheme() {
 		return "file";
 	}
 }

@@ -26,15 +26,21 @@ public class JDbBackup {
 	}
 	
 	/** Loads extra plugins.
-	 * <br>Plugins allow you to extends this library to dump sources to destinations not supported by this library.
+	 * <br>Plugins allow you to extends this library to dump sources not supported natively by this library or accept new destinations.
 	 * <br>They are loaded using the {@link java.util.ServiceLoader} mechanism.
-	 * @param classLoader The class loader used to load the plugins. For instance a class loader over jar files in a directory is exposed in <a href="https://stackoverflow.com/questions/16102010/dynamically-loading-plugin-jars-using-serviceloader">The second option exposed in this question</a>).
+	 * @param classLoaders The class loaders used to load the plugins. For instance a class loader over jar files in a directory is exposed in <a href="https://stackoverflow.com/questions/16102010/dynamically-loading-plugin-jars-using-serviceloader">The second option exposed in this question</a>).
 	 * @see DBDumper
 	 * @see DestinationManager
 	 */
-	public static void loadPlugins(ClassLoader classLoader) {
-		ServiceLoader.load(DestinationManager.class, classLoader).forEach(m -> MANAGERS.put(m.getProtocol(), m));
-		ServiceLoader.load(DBDumper.class, classLoader).forEach(s -> SAVERS.put(s.getScheme(), s));
+	public static void loadPlugins(ClassLoader... classLoaders) {
+		for (ClassLoader classLoader:classLoaders) {
+			ServiceLoader.load(DestinationManager.class, classLoader).forEach(m -> add(MANAGERS, m.getScheme(), m));
+			ServiceLoader.load(DBDumper.class, classLoader).forEach(s -> add(SAVERS, s.getScheme(), s));
+		}
+	}
+	
+	private static <T> void add(Map<String, T> map, String key, T instance) {
+		map.put(key, instance);
 	}
 	
 	/** Makes a backup.

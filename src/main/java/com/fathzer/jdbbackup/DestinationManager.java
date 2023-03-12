@@ -21,7 +21,7 @@ public interface DestinationManager<T> {
 	 * <br>Example file, dropbox, sftp. This destination manager will have to process all file transfers related to destinations that begins with <i>protocol</i>:// 
 	 * @return a String
 	 */
-	String getProtocol();
+	String getScheme();
 
 	/** Tests whether a destination is valid. 
 	 * @param path The destination path.
