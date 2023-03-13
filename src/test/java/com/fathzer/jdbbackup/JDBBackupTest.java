@@ -44,12 +44,20 @@ class JDBBackupTest {
 		final ObservableJDbBackup b = new ObservableJDbBackup();
 		// No destination
 		assertThrows(IllegalArgumentException.class, () -> b.backup(null, null, (String)null));
+		assertThrows(IllegalArgumentException.class, () -> b.backup(null, null, new String[0]));
+		assertThrows(IllegalArgumentException.class, () -> b.backup(null, "java://", (String)null));
+		assertThrows(IllegalArgumentException.class, () -> b.backup(null, "java://", new String[0]));
 		String dest = "file://"+DEST_PATH;
 
 		// No DbName
 		assertTrue(b.tmpFile==null || !b.tmpFile.exists());
 		assertThrows(IllegalArgumentException.class, () -> b.backup(null, null, dest));
 		assertTrue(b.tmpFile==null || !b.tmpFile.exists());
+		
+		// Unknown DB Type
+		assertThrows(IllegalArgumentException.class, () -> b.backup(null, "unknown://jmkjmkl", dest));
+		assertTrue(b.tmpFile==null || !b.tmpFile.exists());
+		
 		
 		FakeJavaDumper.shouldFail = false;
 		String db = "java://";
