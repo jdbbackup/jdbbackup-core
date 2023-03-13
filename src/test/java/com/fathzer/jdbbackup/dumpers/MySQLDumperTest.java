@@ -35,6 +35,8 @@ class MySQLDumperTest {
 		assertThrows(IllegalArgumentException.class, () -> d.getCommand(noUser));
 		final String wrongProtocol = "http://u:p@host/db";
 		assertThrows(IllegalArgumentException.class, () -> d.getCommand(wrongProtocol));
+		
+		assertEquals("x.sql.gz", new MySQLDumper().getExtensionBuilder().apply("x"));
 	}
 	
 	private void expect(List<String> command, String user, String pwd, String host, int port, String db) {
