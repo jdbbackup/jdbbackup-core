@@ -6,10 +6,16 @@ import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.function.BiPredicate;
 import java.util.stream.Stream;
 
 public class Files {
-	private Files() {};
+    static final BiPredicate<Path, BasicFileAttributes> IS_JAR = (p, bfa) -> bfa.isRegularFile() && p.getFileName().toString().endsWith(".jar");
+
+    private Files() {
+		super();
+	}
 	
 	/** Get the URL of files included in a folder with a specified extension. 
 	 * @param root The directory to search in or a file. 
@@ -22,7 +28,7 @@ public class Files {
 	 */
 	public static URL[] toURL(File root, String extension, int depth) throws IOException {
 		if (root.isDirectory()) {
-		    try (Stream<Path> files = java.nio.file.Files.find(root.toPath(), depth, (p, bfa) -> bfa.isRegularFile() && p.getFileName().toString().endsWith(".jar"))) {
+			try (Stream<Path> files = java.nio.file.Files.find(root.toPath(), depth, IS_JAR)) {
 				return files.map(f -> {
 					try {
 						return f.toUri().toURL();
