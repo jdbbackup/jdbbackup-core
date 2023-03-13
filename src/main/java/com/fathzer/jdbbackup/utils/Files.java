@@ -11,7 +11,7 @@ import java.util.function.BiPredicate;
 import java.util.stream.Stream;
 
 public class Files {
-    static final BiPredicate<Path, BasicFileAttributes> IS_JAR = (p, bfa) -> bfa.isRegularFile() && p.getFileName().toString().endsWith(".jar");
+    static final BiPredicate<Path, BasicFileAttributes> IS_JAR = (p, bfa) -> bfa.isRegularFile() && p.toString().endsWith(".jar");
 
     private Files() {
 		super();

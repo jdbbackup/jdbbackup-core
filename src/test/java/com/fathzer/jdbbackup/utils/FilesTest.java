@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
@@ -42,5 +43,24 @@ class FilesTest {
 			assertArrayEquals(new URL[] {new URL("file:/home/myLib.jar")}, Files.toURL(dir, ".jar", 1));
 		}
 	}
+	
+	@Test
+	void testPathMatcher() {
+		// Test not dir
+		final BasicFileAttributes attr = mock(BasicFileAttributes.class);
+		when(attr.isRegularFile()).thenReturn(true);
 
+		final Path jarPath = mock(Path.class);
+		when(jarPath.toString()).thenReturn("/home/myLib.jar");
+		assertTrue(Files.IS_JAR.test(jarPath, attr));
+		
+		final Path notJar = mock(Path.class);
+		when(jarPath.toString()).thenReturn("/home/myFile.txt");
+		assertFalse(Files.IS_JAR.test(notJar, attr));
+
+		// Test dir
+		when(attr.isRegularFile()).thenReturn(false);
+		assertFalse(Files.IS_JAR.test(jarPath, attr));
+		assertFalse(Files.IS_JAR.test(notJar, attr));
+	}
 }
