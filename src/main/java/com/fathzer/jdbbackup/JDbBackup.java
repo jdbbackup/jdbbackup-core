@@ -7,9 +7,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.stream.Collectors;
 
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +22,6 @@ import com.fathzer.jdbbackup.utils.ProxySettings;
 /** A class able to perform a database backup.
  */
 public class JDbBackup {
-	private static final Map<String, DestinationManager<?>> MANAGERS = new HashMap<>();
 	private static final Map<String, DBDumper> SAVERS = new HashMap<>();
 	
 	static {
@@ -34,9 +37,9 @@ public class JDbBackup {
 	 */
 	public static void loadPlugins(ClassLoader... classLoaders) {
 		for (ClassLoader classLoader:classLoaders) {
-			ServiceLoader.load(DestinationManager.class, classLoader).forEach(m -> add(MANAGERS, m.getScheme(), m));
 			ServiceLoader.load(DBDumper.class, classLoader).forEach(s -> add(SAVERS, s.getScheme(), s));
 		}
+		Saver.loadPlugins(classLoaders);
 	}
 	
 	private static <T> void add(Map<String, T> map, String key, T instance) {
@@ -46,23 +49,21 @@ public class JDbBackup {
 	/** Makes a backup.
 	 * @param proxySettings The proxy used to save the data base content
 	 * @param source The address of the data base source (its format depends on the data base type)
-	 * @param destination The address of the backup destination (its format depends on the data base type)
-	 * @return An information string
+	 * @param destinations The addresses of the backup destinations (their format depends on the data base type)
 	 * @throws IOException If something went wrong.
 	 * @throws IllegalArgumentException if arguments are wrong.
 	 */
-	public String backup(ProxySettings proxySettings, String source, String destination) throws IOException {
-		if (source==null || destination==null) {
+	public void backup(ProxySettings proxySettings, String source, String... destinations) throws IOException {
+		if (source==null || destinations==null || destinations.length==0) {
 			throw new IllegalArgumentException();
 		}
-		final Destination dest = new Destination(destination);
-		final DestinationManager<?> manager = getDestinationManager(dest);
+		final List<Saver<?>> dest = Arrays.stream(destinations).map(Destination::new).map(Saver::new).collect(Collectors.toList());
 		if (proxySettings!=null) {
-			manager.setProxy(proxySettings);
+			dest.forEach(d -> d.setProxy(proxySettings));
 		}
 		final File tmpFile = createTempFile();
 		try {
-			return backup(source, manager, dest, tmpFile);
+			backup(source, tmpFile, dest);
 		} finally {
 			Files.delete(tmpFile.toPath());
 		}
@@ -90,22 +91,15 @@ public class JDbBackup {
 		return tmpFile;
 	}
 	
-	private <T> String backup(String dbURI, DestinationManager<T> manager, Destination destination, File tmpFile) throws IOException {
-		DBDumper dumper = getDBDumper(new Destination(dbURI).getScheme());
-		T destFile = manager.validate(destination.getPath(), dumper.getExtensionBuilder());
-		dumper.save(dbURI, tmpFile);
-		try (InputStream in = new BufferedInputStream(new FileInputStream(tmpFile))) {
-			return manager.send(in, tmpFile.length(), destFile);
+	private void backup(String source, File tmpFile, Collection<Saver<?>> savers) throws IOException {
+		DBDumper dumper = getDBDumper(new Destination(source).getScheme());
+		savers.forEach(s->s.prepare(dumper.getExtensionBuilder()));
+		dumper.save(source, tmpFile);
+		for (Saver<?> s : savers) {
+			try (InputStream in = new BufferedInputStream(new FileInputStream(tmpFile))) {
+				s.send(in, tmpFile.length());
+			}
 		}
-	}
-	
-	private <T> DestinationManager<T> getDestinationManager(Destination destination) {
-		@SuppressWarnings("unchecked")
-		final DestinationManager<T> manager = (DestinationManager<T>) MANAGERS.get(destination.getScheme());
-		if (manager==null) {
-			throw new IllegalArgumentException("Unknown protocol: "+destination.getScheme());
-		}
-		return manager;
 	}
 	
 	private DBDumper getDBDumper(String dbType) {

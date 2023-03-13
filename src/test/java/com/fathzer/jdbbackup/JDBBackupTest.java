@@ -43,7 +43,7 @@ class JDBBackupTest {
 	void testOk() throws IOException {
 		final ObservableJDbBackup b = new ObservableJDbBackup();
 		// No destination
-		assertThrows(IllegalArgumentException.class, () -> b.backup(null, null, null));
+		assertThrows(IllegalArgumentException.class, () -> b.backup(null, null, (String)null));
 		String dest = "file://"+DEST_PATH;
 
 		// No DbName
