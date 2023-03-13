@@ -27,11 +27,15 @@ class Saver<T> {
 	
 	static void loadPlugins(ClassLoader... classLoaders) {
 		for (ClassLoader classLoader:classLoaders) {
-			ServiceLoader.load(DestinationManager.class, classLoader).forEach(m -> MANAGERS.put(m.getScheme(), m));
+			ServiceLoader.load(DestinationManager.class, classLoader).forEach(Saver::register);
 		}
 	}
+	
+	static void register(DestinationManager<?> manager) {
+		MANAGERS.put(manager.getScheme(),manager);
+	}
 
-	public void setProxy(ProxySettings proxySettings) {
+	void setProxy(ProxySettings proxySettings) {
 		manager.setProxy(proxySettings);
 	}
 	
