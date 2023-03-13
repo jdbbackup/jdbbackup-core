@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
 import com.fathzer.jdbbackup.utils.ProxySettings;
@@ -25,10 +26,15 @@ class Saver<T> {
 		this.d = d;
 	}
 	
-	static void loadPlugins(ClassLoader... classLoaders) {
+	static boolean loadPlugins(ClassLoader... classLoaders) {
+		final AtomicBoolean found = new AtomicBoolean();
 		for (ClassLoader classLoader:classLoaders) {
-			ServiceLoader.load(DestinationManager.class, classLoader).forEach(Saver::register);
+			ServiceLoader.load(DestinationManager.class, classLoader).forEach((x) -> {
+				found.set(true);
+				register(x);
+			});
 		}
+		return found.get();
 	}
 	
 	static void register(DestinationManager<?> manager) {

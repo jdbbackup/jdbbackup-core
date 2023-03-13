@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import org.slf4j.LoggerFactory;
@@ -32,14 +33,19 @@ public class JDbBackup {
 	 * <br>Plugins allow you to extends this library to dump sources not supported natively by this library or accept new destinations.
 	 * <br>They are loaded using the {@link java.util.ServiceLoader} mechanism.
 	 * @param classLoaders The class loaders used to load the plugins. For instance a class loader over jar files in a directory is exposed in <a href="https://stackoverflow.com/questions/16102010/dynamically-loading-plugin-jars-using-serviceloader">The second option exposed in this question</a>).
+	 * @return true if the classLoaders contained a plugin.
 	 * @see DBDumper
 	 * @see DestinationManager
 	 */
-	public static void loadPlugins(ClassLoader... classLoaders) {
+	public static boolean loadPlugins(ClassLoader... classLoaders) {
+		final AtomicBoolean found = new AtomicBoolean();
 		for (ClassLoader classLoader:classLoaders) {
-			ServiceLoader.load(DBDumper.class, classLoader).forEach(s -> add(SAVERS, s.getScheme(), s));
+			ServiceLoader.load(DBDumper.class, classLoader).forEach(s -> {
+				found.set(true);
+				add(SAVERS, s.getScheme(), s);
+			});
 		}
-		Saver.loadPlugins(classLoaders);
+		return Saver.loadPlugins(classLoaders) || found.get();
 	}
 	
 	private static <T> void add(Map<String, T> map, String key, T instance) {
