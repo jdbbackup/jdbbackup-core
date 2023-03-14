@@ -9,21 +9,18 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import org.slf4j.LoggerFactory;
 
+import com.fathzer.jdbbackup.utils.PluginRegistry;
 import com.fathzer.jdbbackup.utils.ProxySettings;
 
 /** A class able to perform a database backup.
  */
 public class JDbBackup {
-	private static final Map<String, DBDumper> SAVERS = new HashMap<>();
+	private static final PluginRegistry<DBDumper> DUMPERS = new PluginRegistry<>(DBDumper.class, DBDumper::getScheme);
 	
 	static {
 		loadPlugins(ClassLoader.getSystemClassLoader());
@@ -38,18 +35,9 @@ public class JDbBackup {
 	 * @see DestinationManager
 	 */
 	public static boolean loadPlugins(ClassLoader... classLoaders) {
-		final AtomicBoolean found = new AtomicBoolean();
-		for (ClassLoader classLoader:classLoaders) {
-			ServiceLoader.load(DBDumper.class, classLoader).forEach(s -> {
-				found.set(true);
-				add(SAVERS, s.getScheme(), s);
-			});
-		}
-		return Saver.loadPlugins(classLoaders) || found.get();
-	}
-	
-	private static <T> void add(Map<String, T> map, String key, T instance) {
-		map.put(key, instance);
+		boolean newDumpers = DUMPERS.load(classLoaders);
+		boolean newDestManagers = Saver.loadPlugins(classLoaders);
+		return newDumpers || newDestManagers;
 	}
 	
 	/** Makes a backup.
@@ -109,7 +97,7 @@ public class JDbBackup {
 	}
 	
 	private DBDumper getDBDumper(String dbType) {
-		final DBDumper saver = SAVERS.get(dbType);
+		final DBDumper saver = DUMPERS.get(dbType);
 		if (saver==null) {
 			throw new IllegalArgumentException("Unknown database type: "+dbType);
 		}
