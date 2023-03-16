@@ -40,6 +40,21 @@ public class JDbBackup {
 		return newDumpers || newDestManagers;
 	}
 	
+	/** Gets the list of loaded data base dumpers.
+	 * @return a collection
+	 */
+	public static Collection<DBDumper> getDBDumpers() {
+		return DUMPERS.getLoaded();
+	}
+	
+	/** Gets the list of loaded destination managers.
+	 * @return a collection
+	 */
+	@SuppressWarnings("rawtypes")
+	public static Collection<DestinationManager> getDestinationManagers() {
+		return Saver.getLoaded();
+	}
+	
 	/** Makes a backup.
 	 * @param proxySettings The proxy used to save the data base content
 	 * @param source The address of the data base source (its format depends on the data base type)

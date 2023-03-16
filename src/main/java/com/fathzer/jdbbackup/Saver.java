@@ -2,6 +2,7 @@ package com.fathzer.jdbbackup;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.function.Function;
 
 import com.fathzer.jdbbackup.utils.PluginRegistry;
@@ -26,6 +27,11 @@ class Saver<T> {
 	
 	static boolean loadPlugins(ClassLoader... classLoaders) {
 		return MANAGERS.load(classLoaders);
+	}
+
+	@SuppressWarnings("rawtypes")
+	static Collection<DestinationManager> getLoaded() {
+		return MANAGERS.getLoaded();
 	}
 
 	void setProxy(ProxySettings proxySettings) {

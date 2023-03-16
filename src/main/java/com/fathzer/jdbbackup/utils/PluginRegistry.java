@@ -1,5 +1,6 @@
 package com.fathzer.jdbbackup.utils;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -29,7 +30,7 @@ public class PluginRegistry<T> {
 	 * <br>They are loaded using the {@link java.util.ServiceLoader} mechanism.
 	 * @param classLoaders The class loaders used to load the plugins. For instance a class loader over jar files in a directory is exposed in <a href="https://stackoverflow.com/questions/16102010/dynamically-loading-plugin-jars-using-serviceloader">The second option exposed in this question</a>).
 	 * @return true if the classLoaders contain a new plugin (One that was not already registered).
-	 * @see Files#toURL(java.io.File, String, int)
+	 * @see Files#getJarURL(java.io.File, int)
 	 * @see java.net.URLClassLoader#newInstance(java.net.URL[])
 	 * @see ClassLoader#getSystemClassLoader()
 	 * @see #register(Object)
@@ -61,5 +62,12 @@ public class PluginRegistry<T> {
 	 */
 	public T get(String key) {
 		return pluginsMap.get(key);
+	}
+	
+	/** Gets all available plugins.
+	 * @return A collection.
+	 */
+	public Collection<T> getLoaded() {
+		return pluginsMap.values();
 	}
 }

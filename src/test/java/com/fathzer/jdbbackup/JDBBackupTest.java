@@ -15,8 +15,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.slf4j.LoggerFactory;
-import org.slf4j.impl.LogUtils;
-import org.slf4j.impl.SimpleLogger;
+import org.slf4j.simple.LogUtils;
+import org.slf4j.simple.SimpleLogger;
 
 import com.fathzer.jdbbackup.dumpers.FakeJavaDumper;
 
