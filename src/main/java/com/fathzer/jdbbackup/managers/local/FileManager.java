@@ -28,9 +28,8 @@ public class FileManager implements DestinationManager<Path> {
 	}
 
 	@Override
-	public String send(InputStream in, long size, Path dest) throws IOException {
+	public void send(InputStream in, long size, Path dest) throws IOException {
 	    Files.copy(in, dest, StandardCopyOption.REPLACE_EXISTING);
-		return "Saved to: "+dest.toFile().getAbsolutePath();
 	}
 
 	@Override

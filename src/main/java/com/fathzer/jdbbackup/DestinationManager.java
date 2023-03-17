@@ -36,9 +36,8 @@ public interface DestinationManager<T> {
 	 * @param in The input stream on the temporary file to save
 	 * @param size The number of bytes to save (the size of the temporary file). The manager is free to ignore this information and save all bytes available in the input stream.
 	 * @param destination The destination that was returned by {@link #validate(String, Function)}
-	 * @return a message indicating where the file was sent
 	 * @throws IOException If an error occurs while sending the file
 	 * @see #setProxy(ProxySettings)
 	 */
-	String send(final InputStream in, long size, T destination) throws IOException;
+	void send(final InputStream in, long size, T destination) throws IOException;
 }
