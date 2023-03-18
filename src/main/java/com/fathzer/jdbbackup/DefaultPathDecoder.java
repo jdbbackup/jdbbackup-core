@@ -37,7 +37,7 @@ public class DefaultPathDecoder {
 		public StringSplitter(String input, char delimiter) {
 			super(input, delimiter, (s,p) -> s.charAt(p) == '{' ?  s.indexOf('}', p) : -1);
 		}
-	};
+	}
 	
 	/** An instance with the default settings.
 	 */
@@ -103,37 +103,53 @@ public class DefaultPathDecoder {
 	 */
 	protected CharSequence decode(String name, String value) {
 		if ("d".equals(name)) {
-			try {
-				return new SimpleDateFormat(value).format(new Date());
-			} catch (IllegalArgumentException e) {
-				throw new IllegalNamePatternException(value+" is not a valid value for "+name+" pattern");
-			}
+			return decodeDate(value);
 		} else if ("e".equals(name)) {
-			final String v = System.getenv(value);
-			if (v==null) {
-				throw new IllegalArgumentException("No "+value+" environment variable defined");
-			} else {
-				return v;
-			}
+			return decodeEnvVar(value);
 		} else if ("p".equals(name)) {
-			final String v = System.getProperty(value);
-			if (v==null) {
-				throw new IllegalArgumentException("No "+value+" system property defined");
-			} else {
-				return v;
-			}
+			return decodeSysProperty(value);
 		} else if ("f".equals(name)) {
-			final Path path = Paths.get(value);
-			if (!Files.isRegularFile(path)) {
-				throw new IllegalArgumentException("File "+value+" does not exists");
-			}
-			try {
-				return Files.readString(path);
-			} catch (IOException e) {
-				throw new IllegalArgumentException("Unable to read file "+value, e);
-			}
+			return decodeFile(value);
 		} else {
 			throw new IllegalNamePatternException(name+" is not a valid pattern name");
+		}
+	}
+
+	private CharSequence decodeFile(String value) {
+		final Path path = Paths.get(value);
+		if (!Files.isRegularFile(path)) {
+			throw new IllegalArgumentException("File "+value+" does not exists");
+		}
+		try {
+			return Files.readString(path);
+		} catch (IOException e) {
+			throw new IllegalArgumentException("Unable to read file "+value, e);
+		}
+	}
+
+	private CharSequence decodeSysProperty(String value) {
+		final String v = System.getProperty(value);
+		if (v==null) {
+			throw new IllegalArgumentException("No "+value+" system property defined");
+		} else {
+			return v;
+		}
+	}
+
+	private CharSequence decodeEnvVar(String value) {
+		final String v = System.getenv(value);
+		if (v==null) {
+			throw new IllegalArgumentException("No "+value+" environment variable defined");
+		} else {
+			return v;
+		}
+	}
+
+	private CharSequence decodeDate(String value) {
+		try {
+			return new SimpleDateFormat(value).format(new Date());
+		} catch (IllegalArgumentException e) {
+			throw new IllegalNamePatternException(value+" is not a valid value for date pattern");
 		}
 	}
 }

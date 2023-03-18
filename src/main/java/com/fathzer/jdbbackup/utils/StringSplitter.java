@@ -60,7 +60,8 @@ public class StringSplitter implements Iterator<String> {
 		if (!hasNext()) {
 			throw new NoSuchElementException();
 		}
-		for (int current = start; current < input.length(); current++) {
+		int current = start;
+		while (current < input.length()) {
 		    final int escapedEnd = escapedZoneChecker.check(input, current);
 			if (escapedEnd>0) {
 	    		current = escapedEnd;
@@ -69,6 +70,8 @@ public class StringSplitter implements Iterator<String> {
 		        final String result = input.substring(start, current);
 		        start = current + 1;
 		        return result;
+		    } else {
+		    	current++;
 		    }
 		}
 		// End of input

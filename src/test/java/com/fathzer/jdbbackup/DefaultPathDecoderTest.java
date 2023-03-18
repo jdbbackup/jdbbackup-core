@@ -71,18 +71,7 @@ class DefaultPathDecoderTest {
 	}
 	
 	@Test
-	void testSplitter() {
-		{
-		String input = "{f=/home/user/toto}";
-		final StringSplitter s = new StringSplitter(input, '/');
-		assertEquals(input, s.getRemaining());
-		assertTrue(s.hasNext());
-		assertEquals(input,s.next());
-		assertFalse(s.hasNext());
-		assertNull(s.getRemaining());
-		assertThrows(NoSuchElementException.class, () -> s.next());
-		}
-		
+	void testEmptySplitter() {
 		{
 		// Empty string
 		final StringSplitter s = new StringSplitter("", '/');
@@ -91,7 +80,6 @@ class DefaultPathDecoderTest {
 		assertEquals("", s.next());
 		assertFalse(s.hasNext());
 		}
-		
 		{
 		// Test empty tokens
 		final StringSplitter s = new StringSplitter("/a/", '/');
@@ -105,6 +93,20 @@ class DefaultPathDecoderTest {
 		assertTrue(s.hasNext());
 		assertEquals("",s.next());
 		assertFalse(s.hasNext());
+		}
+	}
+
+	@Test
+	void testSplitter() {
+		{
+		String input = "{f=/home/user/toto}";
+		final StringSplitter s = new StringSplitter(input, '/');
+		assertEquals(input, s.getRemaining());
+		assertTrue(s.hasNext());
+		assertEquals(input,s.next());
+		assertFalse(s.hasNext());
+		assertNull(s.getRemaining());
+		assertThrows(NoSuchElementException.class, () -> s.next());
 		}
 		
 		{
