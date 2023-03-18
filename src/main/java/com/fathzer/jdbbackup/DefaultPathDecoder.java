@@ -9,13 +9,32 @@ import java.util.regex.Pattern;
 /** A path decoder that replaces patterns with their actual value.
  * <br>It accepts patterns that have the format {<i>name</i>=<i>value</i>} where <i>name</i> is a lowercase string that identifies the kind of pattern and
  * <i>value</i> is a string that contains the pattern itself (note that the pattern can not contains '}' character.
- * <br>This class only supports one pattern kind: <b>d</b>. The <i>value</i> should be a valid date time pattern
- * as described in <a href="http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html">SimpleDateFormat</a>.
- * <br>For example, the pattern {d=yyyy} should be replaced by the year on 4 characters at runtime.
+ * <br>This class supports the following patterns:<ul>
+ *   <li><b>d</b>: The <i>value</i> must be a valid date time pattern as described in
+ *     <a href="http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html">SimpleDateFormat</a>.
+ *     <br>For example, the pattern {d=yyyy} should be replaced by the year on 4 characters at runtime.</li>
+ *   <li><b>e</b>: The <i>value</i> must be an existing environment variable whose value will replace the pattern</li>
+ *   <li><b>p</b>: The <i>value</i> must be an existing System property whose value will replace the pattern</li>
+ *   <li><b>f</b>: The <i>value</i> must be an existing file whose content will replace the pattern</li>
+ * </ul>
  * <br>You can add your own pattern kind by overriding {@link #decode(String, String)} method.
  */
 public class DefaultPathDecoder {
 	private static final Pattern PATTERN = Pattern.compile("\\{(\\p{Lower}+)=([^\\}]+)\\}");
+	
+	/** A String splitter that ignores delimiter in pattern.
+	 * @see com.fathzer.jdbbackup.utils.StringSplitter
+	 */
+	public static class StringSplitter extends com.fathzer.jdbbackup.utils.StringSplitter {
+		/** Constructor.
+		 * @param input The string to split
+		 * @param delimiter The field delimiter
+		 */
+		public StringSplitter(String input, char delimiter) {
+			super(input, delimiter, (s,p) -> s.charAt(p) == '{' ?  s.indexOf('}', p) : -1);
+		}
+	};
+	
 	/** An instance with the default settings.
 	 */
 	public static final DefaultPathDecoder INSTANCE = new DefaultPathDecoder();
@@ -85,6 +104,22 @@ public class DefaultPathDecoder {
 			} catch (IllegalArgumentException e) {
 				throw new IllegalNamePatternException(value+" is not a valid value for "+name+" pattern");
 			}
+		} else if ("e".equals(name)) {
+			final String v = System.getenv(value);
+			if (v==null) {
+				throw new IllegalArgumentException("No "+value+" environment variable defined");
+			} else {
+				return v;
+			}
+		} else if ("p".equals(name)) {
+			final String v = System.getProperty(value);
+			if (v==null) {
+				throw new IllegalArgumentException("No "+value+" system property defined");
+			} else {
+				return v;
+			}
+		} else if ("f".equals(name)) {
+			throw new IllegalStateException("Not yet implemented");
 		} else {
 			throw new IllegalNamePatternException(name+" is not a valid pattern name");
 		}
