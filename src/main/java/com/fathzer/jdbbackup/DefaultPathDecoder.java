@@ -1,5 +1,9 @@
 package com.fathzer.jdbbackup;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.function.Function;
@@ -119,7 +123,15 @@ public class DefaultPathDecoder {
 				return v;
 			}
 		} else if ("f".equals(name)) {
-			throw new IllegalStateException("Not yet implemented");
+			final Path path = Paths.get(value);
+			if (!Files.isRegularFile(path)) {
+				throw new IllegalArgumentException("File "+value+" does not exists");
+			}
+			try {
+				return Files.readString(path);
+			} catch (IOException e) {
+				throw new IllegalArgumentException("Unable to read file "+value, e);
+			}
 		} else {
 			throw new IllegalNamePatternException(name+" is not a valid pattern name");
 		}

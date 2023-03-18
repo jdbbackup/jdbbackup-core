@@ -21,8 +21,15 @@ import java.util.NoSuchElementException;
  * </ul>
  */
 public class StringSplitter implements Iterator<String> {
+	/** A function that detects escaped zones.
+	 */
 	@FunctionalInterface
 	public static interface EscapeZoneChecker {
+		/** Tests whether the char at <i>position</i> in <i>input</i> starts a escaped zone.
+		 * @param input The string
+		 * @param position The position to test
+		 * @return -1 if the position does not starts an escaped zone. Otherwise, the index of last char of the zone
+		 */
 		int check(String input, int position);
 	}
 	
@@ -31,6 +38,11 @@ public class StringSplitter implements Iterator<String> {
 	private final EscapeZoneChecker escapedZoneChecker;
 	private int start;
 	
+	/** Constructor.
+	 * @param input The string to split
+	 * @param delimiter The field delimiter
+	 * @param escapedZoneChecker the function that detects escaped zones
+	 */
 	public StringSplitter(String input, char delimiter, EscapeZoneChecker escapedZoneChecker) {
 		this.input = input;
 		this.delimiter = delimiter;
@@ -65,6 +77,10 @@ public class StringSplitter implements Iterator<String> {
         return result;
 	}
 	
+	/** Gets the remaining characters of the String.
+	 * <br>This method has no impact on {@link #hasNext()} and {@link #next()} methods.
+	 * @return a String or null if the {@link #hasNext()} is false.
+	 */
 	public String getRemaining() {
 		return hasNext() ? input.substring(start) : null;
 	}

@@ -65,7 +65,8 @@ class DefaultPathDecoderTest {
 	
 	@Test
 	void testFile() {
-		assertEquals("-File content",DefaultPathDecoder.INSTANCE.decodePath("-{f=src/test/resources/DefaultPathDecoderTest.txt}"));
+		String filePath = "src/test/resources/"+this.getClass().getName().replace('.', '/')+".txt";
+		assertEquals("-File content\nsecond line",DefaultPathDecoder.INSTANCE.decodePath("-{f="+filePath+"}"));
 		assertThrows(IllegalArgumentException.class, () -> DefaultPathDecoder.INSTANCE.decode("f","NotExisting"));
 	}
 	
