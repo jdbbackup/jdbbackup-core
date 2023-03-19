@@ -3,6 +3,8 @@ package com.fathzer.jdbbackup;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Date;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
@@ -65,9 +67,14 @@ class DefaultPathDecoderTest {
 	
 	@Test
 	void testFile() {
-		String filePath = "src/test/resources/"+this.getClass().getName().replace('.', '/')+".txt";
+		final String filePath = "src/test/resources/"+this.getClass().getName().replace('.', '/')+".txt";
 		assertEquals("-File content\nsecond line",DefaultPathDecoder.INSTANCE.decodePath("-{f="+filePath+"}"));
 		assertThrows(IllegalArgumentException.class, () -> DefaultPathDecoder.INSTANCE.decode("f","NotExisting"));
+		try (MockedStatic<Files> files = mockStatic(Files.class)) {
+			files.when(() -> Files.isRegularFile(any())).thenReturn(true);
+			files.when(() -> Files.readString(any())).thenThrow(new IOException());
+			assertThrows(IllegalArgumentException.class, ()-> DefaultPathDecoder.INSTANCE.decodePath("-{f="+filePath+"}"));
+		}
 	}
 	
 	@Test
