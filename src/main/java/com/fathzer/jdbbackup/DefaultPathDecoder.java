@@ -15,8 +15,8 @@ import java.util.regex.Pattern;
  * <i>value</i> is a string that contains the pattern itself (note that the pattern can not contains '}' character.
  * <br>This class supports the following patterns:<ul>
  *   <li><b>d</b>: The <i>value</i> must be a valid date time pattern as described in
- *     <a href="http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html">SimpleDateFormat</a>.
- *     <br>For example, the pattern {d=yyyy} should be replaced by the year on 4 characters at runtime.</li>
+ *     <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/text/SimpleDateFormat.html">SimpleDateFormat</a>.
+ *     <br>For example, the pattern {d=yyyy} will be replaced by the year on 4 characters at runtime.</li>
  *   <li><b>e</b>: The <i>value</i> must be an existing environment variable whose value will replace the pattern</li>
  *   <li><b>p</b>: The <i>value</i> must be an existing System property whose value will replace the pattern</li>
  *   <li><b>f</b>: The <i>value</i> must be an existing file whose content will replace the pattern</li>
