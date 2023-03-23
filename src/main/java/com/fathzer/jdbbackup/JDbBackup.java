@@ -36,23 +36,23 @@ public class JDbBackup {
 	 */
 	public static boolean loadPlugins(ClassLoader... classLoaders) {
 		boolean newDumpers = DUMPERS.load(classLoaders);
-		boolean newDestManagers = Saver.loadPlugins(classLoaders);
+		boolean newDestManagers = Saver.getManagers().load(classLoaders);
 		return newDumpers || newDestManagers;
 	}
 	
-	/** Gets the list of loaded data base dumpers.
-	 * @return a collection
+	/** Gets the data base dumpers registry.
+	 * @return a plugin registry
 	 */
-	public static Collection<DBDumper> getDBDumpers() {
-		return DUMPERS.getLoaded();
+	public static PluginRegistry<DBDumper> getDBDumpers() {
+		return DUMPERS;
 	}
 	
-	/** Gets the list of loaded destination managers.
-	 * @return a collection
+	/** Gets the destination managers registry.
+	 * @return a plugin registry
 	 */
 	@SuppressWarnings("rawtypes")
-	public static Collection<DestinationManager> getDestinationManagers() {
-		return Saver.getLoaded();
+	public static PluginRegistry<DestinationManager> getDestinationManagers() {
+		return Saver.getManagers();
 	}
 	
 	/** Makes a backup.

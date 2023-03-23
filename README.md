@@ -30,10 +30,11 @@ This library contains the following implementation of *DestinationManager*:
 **DBDumper**s and **DestinationManager**s are loaded through the [Java service loader](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/ServiceLoader.html) standard mechanism. So, it's quite easy to implement your own and use it with this library.  
 Examples can be found in [jdbbackup repositories](https://github.com/jdbbackup).
 
-Class that can be used as command line programs are also available [here](https://github.com/jdbbackup/jdbbackup-cli).
-
-It requires java 11+.
+Class that can be used as command line programs are also available [here](https://github.com/jdbbackup/jdbbackup-cli).  
+A Docker image that schedules backups is available [here](https://github.com/jdbbackup/jdbbackup-docker).
 
 ## How to use it
+This library requires java 11+.
+
 *WORK in progress*
 

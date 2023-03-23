@@ -15,12 +15,12 @@ class Destination {
 		}
 		int index = dest.indexOf(':');
 		if (index<=0) {
-			throw new IllegalArgumentException ("Destination type is missing in "+dest);
+			throw new IllegalArgumentException ("Destination scheme is missing in "+dest);
 		}
 		this.type = dest.substring(0, index);
 		for (int i=1;i<=2;i++) {
 			if (index+i>=dest.length() || dest.charAt(index+i)!=URI_PATH_SEPARATOR) {
-				throw new IllegalArgumentException("Destination has not the right format: "+dest+" does not not match type://path");
+				throw new IllegalArgumentException("Destination has not the right format: "+dest+" does not not match scheme://path");
 			}
 		}
 		this.path = dest.substring(index+3);

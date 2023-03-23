@@ -1,6 +1,6 @@
 package com.fathzer.jdbbackup.utils;
 
-import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -65,9 +65,9 @@ public class PluginRegistry<T> {
 	}
 	
 	/** Gets all available plugins.
-	 * @return A collection.
+	 * @return An unmodifiable map.
 	 */
-	public Collection<T> getLoaded() {
-		return pluginsMap.values();
+	public Map<String, T> getLoaded() {
+		return Collections.unmodifiableMap(pluginsMap);
 	}
 }
