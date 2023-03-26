@@ -34,8 +34,8 @@ class PluginRegistryTest {
 	@Test
 	void test() {
 		PluginRegistry<DBDumper> registry = new PluginRegistry<>(DBDumper.class, DBDumper::getScheme);
-		assertTrue(registry.load(ClassLoader.getSystemClassLoader()));
-		assertFalse(registry.load(ClassLoader.getSystemClassLoader()));
+		assertFalse(registry.load(ClassLoader.getSystemClassLoader()).isEmpty());
+		assertTrue(registry.load(ClassLoader.getSystemClassLoader()).isEmpty());
 		assertFalse(registry.register(new MySQLDumper()));
 		assertNull(registry.get("test"));
 		assertTrue(registry.register(new FakePlugin("test")));

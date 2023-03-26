@@ -35,8 +35,8 @@ public class JDbBackup {
 	 * @see DestinationManager
 	 */
 	public static boolean loadPlugins(ClassLoader... classLoaders) {
-		boolean newDumpers = DUMPERS.load(classLoaders);
-		boolean newDestManagers = Saver.getManagers().load(classLoaders);
+		boolean newDumpers = !DUMPERS.load(classLoaders).isEmpty();
+		boolean newDestManagers = !Saver.getManagers().load(classLoaders).isEmpty();
 		return newDumpers || newDestManagers;
 	}
 	

@@ -12,7 +12,7 @@ Source and destinations are defined by strings that may start with respectively 
 The rest of the source and destination addresses depends on the **DBDumper**/**DestinationManager**.  
 Have a look to their javadoc to have more details.
 
-That said, unless otherwise specified, all managers support the use of the following patterns in destinations:  
+That said, unless otherwise specified, all managers support the use of the following patterns in destinations (except in the DBDumper/DestinationManager identifier):  
 - {d=*dateFormat*}: dateFormat must be a valid date time pattern as described in [SimpleDateFormat documentation](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/text/SimpleDateFormat.html).  
 For example, the pattern {d=yyyy} will be replaced by the year on 4 characters at runtime.
 - {e=*envVar*}: envVar must be an existing environment variable whose value will replace the pattern.
