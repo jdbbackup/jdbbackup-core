@@ -5,8 +5,6 @@ import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.Test;
 
-import com.fathzer.jdbbackup.sources.ProcessContext;
-
 class ProcessContextTest {
 	@Test
 	void test() {

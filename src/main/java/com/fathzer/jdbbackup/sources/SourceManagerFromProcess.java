@@ -13,13 +13,12 @@ import org.slf4j.LoggerFactory;
 
 import com.fathzer.jdbbackup.SourceManager;
 
-/** A class able to dump a database to a compressed (.gz) file.
- * <br>Data base dump is obtained through a command line.
+/** A class able to data source obtain through a command line to a compressed (.gz) file.
  */
-public abstract class DBDumperFromProcess implements SourceManager {
+public abstract class SourceManagerFromProcess implements SourceManager {
 	/** Constructor.
 	 */
-	protected DBDumperFromProcess() {
+	protected SourceManagerFromProcess() {
 		super();
 	}
 	
@@ -35,7 +34,7 @@ public abstract class DBDumperFromProcess implements SourceManager {
 		compressThread.start();
 		final InputStream err = process.getErrorStream();
 		Thread errorThread = new Thread(() -> {
-				final Logger logger = LoggerFactory.getLogger(DBDumperFromProcess.this.getClass());
+				final Logger logger = LoggerFactory.getLogger(SourceManagerFromProcess.this.getClass());
 				try (BufferedReader bufErr = new BufferedReader(new InputStreamReader(err))) {
 					for (String line = bufErr.readLine(); line!=null; line = bufErr.readLine()) {
 						logger.warn(line);
@@ -65,10 +64,10 @@ public abstract class DBDumperFromProcess implements SourceManager {
 		}
     }
 
-	/** Gets the command line to execute to save the database.
-	 * @param source The database access URI
+	/** Gets the command line to execute to save the data source.
+	 * @param source The data source access URI
 	 * @return The list of the tokens that compose the command
-	 * @throws IllegalArgumentException if Options are invalid 
+	 * @throws IllegalArgumentException if source is invalid 
 	 */
 	protected abstract List<String> getCommand(String source);
 }

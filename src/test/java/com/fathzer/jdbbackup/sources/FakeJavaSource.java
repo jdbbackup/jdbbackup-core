@@ -5,10 +5,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
-import com.fathzer.jdbbackup.sources.DBDumperFromProcess;
 import com.fathzer.jdbbackup.utils.BasicExtensionBuilder;
 
-public final class FakeJavaDumper extends DBDumperFromProcess {
+public final class FakeJavaSource extends SourceManagerFromProcess {
 	public static final List<String> CONTENT = Arrays.asList("Hello,","This is a fake db dump");
 	public static boolean shouldFail;
 	@Override
@@ -18,8 +17,8 @@ public final class FakeJavaDumper extends DBDumperFromProcess {
 
 	@Override
 	protected List<String> getCommand(String params) {
-		List<String> args = shouldFail ? Arrays.asList("java",FakeJavaDumper.class.getName()) :
-			Arrays.asList("java","-cp","./target/classes"+File.pathSeparator+"./target/test-classes",FakeJavaDumper.class.getName());
+		List<String> args = shouldFail ? Arrays.asList("java",FakeJavaSource.class.getName()) :
+			Arrays.asList("java","-cp","./target/classes"+File.pathSeparator+"./target/test-classes",FakeJavaSource.class.getName());
 		return args;
 	}
 	

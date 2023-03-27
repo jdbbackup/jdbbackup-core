@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.simple.LogUtils;
 import org.slf4j.simple.SimpleLogger;
 
-import com.fathzer.jdbbackup.sources.FakeJavaDumper;
+import com.fathzer.jdbbackup.sources.FakeJavaSource;
 
 class JDBBackupTest {
 	private static final String DEST_PATH = "./tmpTestFile.gz";
@@ -59,7 +59,7 @@ class JDBBackupTest {
 		assertTrue(b.tmpFile==null || !b.tmpFile.exists());
 		
 		
-		FakeJavaDumper.shouldFail = false;
+		FakeJavaSource.shouldFail = false;
 		String db = "java://";
 		b.backup(null, db, dest);
 		assertTrue(b.tmpFile==null || !b.tmpFile.exists());
@@ -67,7 +67,7 @@ class JDBBackupTest {
 		try (BufferedReader reader = new BufferedReader(
 				new InputStreamReader(new GZIPInputStream(new FileInputStream(new File(DEST_PATH)))))) {
 			final List<String> lines = reader.lines().collect(Collectors.toList());
-			assertEquals(FakeJavaDumper.CONTENT, lines);
+			assertEquals(FakeJavaSource.CONTENT, lines);
 		}
 	}
 
@@ -77,8 +77,8 @@ class JDBBackupTest {
 		final ObservableJDbBackup b = new ObservableJDbBackup();
 		String dest = "file://"+DEST_PATH;
 		String db = "java://";
-		FakeJavaDumper.shouldFail = true;
-		SimpleLogger log = (SimpleLogger) LoggerFactory.getLogger(com.fathzer.jdbbackup.sources.FakeJavaDumper.class);
+		FakeJavaSource.shouldFail = true;
+		SimpleLogger log = (SimpleLogger) LoggerFactory.getLogger(com.fathzer.jdbbackup.sources.FakeJavaSource.class);
 		final int previous = LogUtils.setLevel(log, "off");
 		assertThrows(IOException.class, () -> b.backup(null, db, dest));
 		LogUtils.setLevel(log, previous);

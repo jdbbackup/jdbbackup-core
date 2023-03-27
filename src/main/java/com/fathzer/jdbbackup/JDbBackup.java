@@ -17,10 +17,10 @@ import org.slf4j.LoggerFactory;
 import com.fathzer.jdbbackup.utils.PluginRegistry;
 import com.fathzer.jdbbackup.utils.ProxySettings;
 
-/** A class able to perform a database backup.
+/** A class able to perform a data source backup.
  */
 public class JDbBackup {
-	private static final PluginRegistry<SourceManager> DUMPERS = new PluginRegistry<>(SourceManager.class, SourceManager::getScheme);
+	private static final PluginRegistry<SourceManager> SOURCES = new PluginRegistry<>(SourceManager.class, SourceManager::getScheme);
 	
 	static {
 		loadPlugins(ClassLoader.getSystemClassLoader());
@@ -35,16 +35,16 @@ public class JDbBackup {
 	 * @see DestinationManager
 	 */
 	public static boolean loadPlugins(ClassLoader... classLoaders) {
-		boolean newDumpers = !DUMPERS.load(classLoaders).isEmpty();
-		boolean newDestManagers = !Saver.getManagers().load(classLoaders).isEmpty();
-		return newDumpers || newDestManagers;
+		boolean newSources = !SOURCES.load(classLoaders).isEmpty();
+		boolean newDestinations = !Saver.getManagers().load(classLoaders).isEmpty();
+		return newSources || newDestinations;
 	}
 	
-	/** Gets the data base dumpers registry.
+	/** Gets the source managers registry.
 	 * @return a plugin registry
 	 */
-	public static PluginRegistry<SourceManager> getDBDumpers() {
-		return DUMPERS;
+	public static PluginRegistry<SourceManager> getSourceManagers() {
+		return SOURCES;
 	}
 	
 	/** Gets the destination managers registry.
@@ -78,7 +78,7 @@ public class JDbBackup {
 		}
 	}
 	
-	/** Creates the temporary file that will be used by the DBDumper to create the database backup.
+	/** Creates the temporary file that will be used by the source manager to create the backup.
 	 * @return a File.
 	 * @throws IOException If something went wrong.
 	 */
@@ -101,9 +101,9 @@ public class JDbBackup {
 	}
 	
 	private void backup(String source, File tmpFile, Collection<Saver<?>> savers) throws IOException {
-		SourceManager dumper = getDBDumper(new Destination(source).getScheme());
-		savers.forEach(s->s.prepare(dumper.getExtensionBuilder()));
-		dumper.save(source, tmpFile);
+		SourceManager sourceManager = getSourceManager(new Destination(source).getScheme());
+		savers.forEach(s->s.prepare(sourceManager.getExtensionBuilder()));
+		sourceManager.save(source, tmpFile);
 		for (Saver<?> s : savers) {
 			try (InputStream in = new BufferedInputStream(new FileInputStream(tmpFile))) {
 				s.send(in, tmpFile.length());
@@ -111,10 +111,10 @@ public class JDbBackup {
 		}
 	}
 	
-	private SourceManager getDBDumper(String dbType) {
-		final SourceManager saver = DUMPERS.get(dbType);
+	private SourceManager getSourceManager(String dbType) {
+		final SourceManager saver = SOURCES.get(dbType);
 		if (saver==null) {
-			throw new IllegalArgumentException("Unknown database type: "+dbType);
+			throw new IllegalArgumentException("Unknown data source type: "+dbType);
 		}
 		return saver;
 	}

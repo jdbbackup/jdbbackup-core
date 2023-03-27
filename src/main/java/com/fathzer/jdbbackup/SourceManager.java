@@ -10,7 +10,7 @@ import com.fathzer.jdbbackup.utils.BasicExtensionBuilder;
  */
 public interface SourceManager {
 
-	/** Gets the extension builder of this dumper.
+	/** Gets the extension builder of this manager.
 	 * <br>The returned instance is responsible for adding (or not) an extension to the target path.
 	 * @return a function
 	 */
@@ -18,15 +18,15 @@ public interface SourceManager {
 		return BasicExtensionBuilder.INSTANCE;
 	}
 	
-	/** Gets the scheme used in the URL to identify the type of database this saver can dump.
+	/** Gets the scheme used in the URL to identify the type of data source this manager can dump.
 	 * @return a string (example mysql)
 	 */
 	String getScheme();
 	
 	
-	/** Saves a database to the specified location.
-	 * @param source The address of the database to save (Its format depends on the DBDumper)
-	 * @param destFile the backup destination file or null to backup database in a temporary file.
+	/** Saves a data source to the specified location.
+	 * @param source The address of the data source to save (Its format depends on the SourceManager)
+	 * @param destFile the backup destination file.
 	 * @throws IOException If something went wrong
 	 */
 	void save(String source, File destFile) throws IOException;

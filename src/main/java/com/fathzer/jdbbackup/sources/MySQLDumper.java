@@ -7,12 +7,12 @@ import java.util.List;
 
 import com.fathzer.jdbbackup.utils.LoginParser;
 
-/** A DBSaver that saves MYSQL database.
+/** A source manager that dumps MYSQL database.
  * <br>It requires mysqldump to be installed on the machine.
  * <br>The URI format is mysql://<i>user</i>:<i>pwd</i>@<i>host</i>[:<i>port</i>]/<i>database</i>
  * <br>Default port is 3306
  */
-public class MySQLDumper extends DBDumperFromProcess {
+public class MySQLDumper extends SourceManagerFromProcess {
 	@Override
 	protected List<String> getCommand(String source) {
 		URI params = URI.create(source);

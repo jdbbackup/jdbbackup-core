@@ -22,8 +22,10 @@ public class PluginRegistry<T> {
 	private final Class<T> aClass;
 	
 	/** Constructor.
+	 * <br>The built registry is empty. Use {@link #load(ClassLoader...)} to populate it.
 	 * @param aClass Class instance of T type 
 	 * @param keyFunction A function that get the plugin's key.
+	 * @see #load(ClassLoader...)
 	 */
 	public PluginRegistry(Class<T> aClass, Function<T, String> keyFunction) {
 		this.aClass = aClass;
@@ -31,7 +33,7 @@ public class PluginRegistry<T> {
 		this.keyFunction = keyFunction;
 	}
 	
-	/** Loads plugins.
+	/** Loads plugins in this registry.
 	 * <br>They are loaded using the {@link java.util.ServiceLoader} mechanism.
 	 * @param classLoaders The class loaders used to load the plugins. For instance a class loader over jar files in a directory is exposed in <a href="https://stackoverflow.com/questions/16102010/dynamically-loading-plugin-jars-using-serviceloader">The second option exposed in this question</a>).
 	 * @return List of new (The ones that were not already registered) plugins loaded.

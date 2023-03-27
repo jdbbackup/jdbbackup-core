@@ -31,7 +31,7 @@ This library contains the following implementation of *DestinationManager*:
 Examples can be found in [jdbbackup repositories](https://github.com/jdbbackup).
 
 A class that can be used as command line programs is also available [here](https://github.com/jdbbackup/jdbbackup-cli).  
-A class that schedules backups is available [here](https://github.com/jdbbackup/jdbbackup-docker). This project also contains a ready to work Docker image able to schedule backup of MySQL database dump.
+A class that schedules backups is available [here](https://github.com/jdbbackup/jdbbackup-docker). This project also contains a ready to work Docker image able to schedule backups.
 
 ## How to use it
 This library requires java 11+.
