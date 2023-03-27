@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.simple.LogUtils;
 import org.slf4j.simple.SimpleLogger;
 
-import com.fathzer.jdbbackup.dumpers.FakeJavaDumper;
+import com.fathzer.jdbbackup.sources.FakeJavaDumper;
 
 class JDBBackupTest {
 	private static final String DEST_PATH = "./tmpTestFile.gz";
@@ -78,7 +78,7 @@ class JDBBackupTest {
 		String dest = "file://"+DEST_PATH;
 		String db = "java://";
 		FakeJavaDumper.shouldFail = true;
-		SimpleLogger log = (SimpleLogger) LoggerFactory.getLogger(com.fathzer.jdbbackup.dumpers.FakeJavaDumper.class);
+		SimpleLogger log = (SimpleLogger) LoggerFactory.getLogger(com.fathzer.jdbbackup.sources.FakeJavaDumper.class);
 		final int previous = LogUtils.setLevel(log, "off");
 		assertThrows(IOException.class, () -> b.backup(null, db, dest));
 		LogUtils.setLevel(log, previous);

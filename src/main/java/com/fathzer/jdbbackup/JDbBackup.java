@@ -20,7 +20,7 @@ import com.fathzer.jdbbackup.utils.ProxySettings;
 /** A class able to perform a database backup.
  */
 public class JDbBackup {
-	private static final PluginRegistry<DBDumper> DUMPERS = new PluginRegistry<>(DBDumper.class, DBDumper::getScheme);
+	private static final PluginRegistry<SourceManager> DUMPERS = new PluginRegistry<>(SourceManager.class, SourceManager::getScheme);
 	
 	static {
 		loadPlugins(ClassLoader.getSystemClassLoader());
@@ -31,7 +31,7 @@ public class JDbBackup {
 	 * <br>They are loaded using the {@link java.util.ServiceLoader} mechanism.
 	 * @param classLoaders The class loaders used to load the plugins. For instance a class loader over jar files in a directory is exposed in <a href="https://stackoverflow.com/questions/16102010/dynamically-loading-plugin-jars-using-serviceloader">The second option exposed in this question</a>).
 	 * @return true if the classLoaders contained a plugin.
-	 * @see DBDumper
+	 * @see SourceManager
 	 * @see DestinationManager
 	 */
 	public static boolean loadPlugins(ClassLoader... classLoaders) {
@@ -43,7 +43,7 @@ public class JDbBackup {
 	/** Gets the data base dumpers registry.
 	 * @return a plugin registry
 	 */
-	public static PluginRegistry<DBDumper> getDBDumpers() {
+	public static PluginRegistry<SourceManager> getDBDumpers() {
 		return DUMPERS;
 	}
 	
@@ -101,7 +101,7 @@ public class JDbBackup {
 	}
 	
 	private void backup(String source, File tmpFile, Collection<Saver<?>> savers) throws IOException {
-		DBDumper dumper = getDBDumper(new Destination(source).getScheme());
+		SourceManager dumper = getDBDumper(new Destination(source).getScheme());
 		savers.forEach(s->s.prepare(dumper.getExtensionBuilder()));
 		dumper.save(source, tmpFile);
 		for (Saver<?> s : savers) {
@@ -111,8 +111,8 @@ public class JDbBackup {
 		}
 	}
 	
-	private DBDumper getDBDumper(String dbType) {
-		final DBDumper saver = DUMPERS.get(dbType);
+	private SourceManager getDBDumper(String dbType) {
+		final SourceManager saver = DUMPERS.get(dbType);
 		if (saver==null) {
 			throw new IllegalArgumentException("Unknown database type: "+dbType);
 		}

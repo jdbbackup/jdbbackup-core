@@ -1,10 +1,12 @@
-package com.fathzer.jdbbackup.dumpers;
+package com.fathzer.jdbbackup.sources;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+
+import com.fathzer.jdbbackup.sources.MySQLDumper;
 
 class MySQLDumperTest {
 	private static class MySQLObservableDumper extends MySQLDumper {

@@ -1,4 +1,4 @@
-package com.fathzer.jdbbackup.dumpers;
+package com.fathzer.jdbbackup.sources;
 
 import java.net.PasswordAuthentication;
 import java.net.URI;

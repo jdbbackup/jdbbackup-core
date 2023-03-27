@@ -1,10 +1,11 @@
-package com.fathzer.jdbbackup.dumpers;
+package com.fathzer.jdbbackup.sources;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
+import com.fathzer.jdbbackup.sources.DBDumperFromProcess;
 import com.fathzer.jdbbackup.utils.BasicExtensionBuilder;
 
 public final class FakeJavaDumper extends DBDumperFromProcess {

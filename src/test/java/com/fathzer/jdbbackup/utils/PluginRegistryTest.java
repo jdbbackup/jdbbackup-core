@@ -7,12 +7,12 @@ import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
 
-import com.fathzer.jdbbackup.DBDumper;
-import com.fathzer.jdbbackup.dumpers.MySQLDumper;
+import com.fathzer.jdbbackup.SourceManager;
+import com.fathzer.jdbbackup.sources.MySQLDumper;
 
 class PluginRegistryTest {
 
-	private static final class FakePlugin implements DBDumper {
+	private static final class FakePlugin implements SourceManager {
 		private String scheme;
 
 		private FakePlugin(String scheme) {
@@ -33,7 +33,7 @@ class PluginRegistryTest {
 
 	@Test
 	void test() {
-		PluginRegistry<DBDumper> registry = new PluginRegistry<>(DBDumper.class, DBDumper::getScheme);
+		PluginRegistry<SourceManager> registry = new PluginRegistry<>(SourceManager.class, SourceManager::getScheme);
 		assertFalse(registry.load(ClassLoader.getSystemClassLoader()).isEmpty());
 		assertTrue(registry.load(ClassLoader.getSystemClassLoader()).isEmpty());
 		assertFalse(registry.register(new MySQLDumper()));

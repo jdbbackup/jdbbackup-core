@@ -1,4 +1,4 @@
-package com.fathzer.jdbbackup.dumpers;
+package com.fathzer.jdbbackup.sources;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -11,12 +11,12 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fathzer.jdbbackup.DBDumper;
+import com.fathzer.jdbbackup.SourceManager;
 
 /** A class able to dump a database to a compressed (.gz) file.
  * <br>Data base dump is obtained through a command line.
  */
-public abstract class DBDumperFromProcess implements DBDumper {
+public abstract class DBDumperFromProcess implements SourceManager {
 	/** Constructor.
 	 */
 	protected DBDumperFromProcess() {

@@ -6,9 +6,9 @@ import java.util.function.Function;
 
 import com.fathzer.jdbbackup.utils.BasicExtensionBuilder;
 
-/** A class able to dump a database to a file.
+/** A class able to dump a data source to a file.
  */
-public interface DBDumper {
+public interface SourceManager {
 
 	/** Gets the extension builder of this dumper.
 	 * <br>The returned instance is responsible for adding (or not) an extension to the target path.

@@ -1,9 +1,11 @@
-package com.fathzer.jdbbackup.dumpers;
+package com.fathzer.jdbbackup.sources;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.Test;
+
+import com.fathzer.jdbbackup.sources.ProcessContext;
 
 class ProcessContextTest {
 	@Test
