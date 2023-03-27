@@ -50,7 +50,7 @@ public abstract class AbstractPluginsDownloader {
 	 * @param uri The uri where to load the remote plugin registry.
 	 * @param localDirectory The folder where plugins jar files will be loaded.
 	 */
-	public AbstractPluginsDownloader(PluginRegistry<?> registry, URI uri, Path localDirectory) {
+	protected AbstractPluginsDownloader(PluginRegistry<?> registry, URI uri, Path localDirectory) {
 		this.uri = uri;
 		this.localDirectory = localDirectory;
 		this.registry = registry;
@@ -88,7 +88,7 @@ public abstract class AbstractPluginsDownloader {
 			return;
 		}
 		final Map<String, URI> remoteRegistry = getURIMap();
-		checkMissingKeys(keys, k -> {return !remoteRegistry.containsKey(k);});
+		checkMissingKeys(keys, k -> !remoteRegistry.containsKey(k));
 		if (!Files.exists(localDirectory)) {
 			Files.createDirectories(localDirectory);
 		}
@@ -117,7 +117,7 @@ public abstract class AbstractPluginsDownloader {
 			log.info("Downloading {} to file {}",uri, file);
 			final HttpRequest request = getRequestBuilder().uri(uri).build();
 			try {
-				final BodyHandler<Path> bodyHandler = (info) -> info.statusCode() == 200 ? BodySubscribers.ofFile(file) : BodySubscribers.replacing(Paths.get("/NULL"));
+				final BodyHandler<Path> bodyHandler = info -> info.statusCode() == 200 ? BodySubscribers.ofFile(file) : BodySubscribers.replacing(Paths.get("/NULL"));
 				final HttpResponse<Path> response = getHttpClient().send(request, bodyHandler);
 				if (response.statusCode()!=200) {
 					throw new IOException(String.format("Unexpected status code %d received while downloading %s", response.statusCode(), uri));
@@ -156,7 +156,7 @@ public abstract class AbstractPluginsDownloader {
 		try {
 			final HttpResponse<InputStream> response = getHttpClient().send(request, BodyHandlers.ofInputStream());
 			if (response.statusCode()!=200) {
-				throw new IOException(String.format("Unexpected status code %d received while downloading %s registry", pluginTypeWording, response.statusCode()));
+				throw new IOException(String.format("Unexpected status code %d received while downloading %s registry", response.statusCode(), pluginTypeWording));
 			}
 			try (InputStream in = response.body()) {
 				return getURIMap(in);
