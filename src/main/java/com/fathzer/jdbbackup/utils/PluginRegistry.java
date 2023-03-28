@@ -1,10 +1,6 @@
 package com.fathzer.jdbbackup.utils;
 
-import java.io.IOException;
-import java.net.URL;
-import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -76,18 +72,5 @@ public class PluginRegistry<T> {
 	 */
 	public Map<String, T> getLoaded() {
 		return Collections.unmodifiableMap(pluginsMap);
-	}
-	
-	/** Gets the URLs of a file set
-	 * @param files List of files
-	 * @return an Array of url
-	 * @throws IOException if something went wrong.
-	 */
-	public static URL[] getURLs(Collection<Path> files) throws IOException {
-		final List<URL> urls = new ArrayList<>(files.size());
-		for (Path f : files) {
-			urls.add(f.toUri().toURL());
-		}
-		return urls.toArray(URL[]::new);
 	}
 }

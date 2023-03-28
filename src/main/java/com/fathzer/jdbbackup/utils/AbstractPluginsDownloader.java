@@ -94,7 +94,7 @@ public abstract class AbstractPluginsDownloader {
 		}
 		final Set<URI> toDownload = keys.stream().map(remoteRegistry::get).collect(Collectors.toSet());
 		try {
-			final URL[] pluginsUrls = PluginRegistry.getURLs(toDownload.stream().map(this::download).collect(Collectors.toList()));
+			final URL[] pluginsUrls = toDownload.stream().map(this::download).map(com.fathzer.jdbbackup.utils.Files::getURL).toArray(URL[]::new);
 			log.info("Start loading registry plugins from {}",Arrays.asList(pluginsUrls));
 			this.registry.load(new URLClassLoader(pluginsUrls));
 			log.info("registry plugins are loaded");

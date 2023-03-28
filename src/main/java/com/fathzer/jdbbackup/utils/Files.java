@@ -20,6 +20,20 @@ public class Files {
     private Files() {
 		super();
 	}
+    
+	/** Gets the URL of a file
+	 * <br>The main difference with Path.toUri().toURL() is it encapsulate the 'more than unlikely' MalformedURLException
+	 * thrown by toURL() in a UncheckedIOException, making it easy to use in a lambda expression.
+	 * @param file a File
+	 * @return an url
+	 */
+	public static URL getURL(Path file) {
+		try {
+			return file.toUri().toURL();
+		} catch (MalformedURLException e) {
+			throw new UncheckedIOException(e);
+		}
+	}
 	
 	/** Get the URL of jar files included in a folder with a specified extension. 
 	 * @param root The directory to search in or a file. 
@@ -32,12 +46,7 @@ public class Files {
 	public static URL[] getJarURL(File root, int depth) throws IOException {
 		if (root.isDirectory()) {
 			try (Stream<Path> files = java.nio.file.Files.find(root.toPath(), depth, IS_JAR)) {
-				return files.map(f -> {
-					try {
-						return f.toUri().toURL();
-					} catch (MalformedURLException e) {
-						throw new UncheckedIOException(e);
-				}}).toArray(URL[]::new);
+				return files.map(Files::getURL).toArray(URL[]::new);
 		    }
 		} else if (root.isFile() && root.getName().endsWith(JAR_EXTENSION)) {
 			return new URL[] {root.toURI().toURL()};
