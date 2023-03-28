@@ -68,7 +68,7 @@ public class PluginRegistry<T> {
 	}
 	
 	/** Gets all available plugins.
-	 * @return An unmodifiable map.
+	 * @return An unmodifiable map. Please note the returned map will reflect changes in this registry. If a plugin is added, it will appear in the returned map.
 	 */
 	public Map<String, T> getLoaded() {
 		return Collections.unmodifiableMap(pluginsMap);

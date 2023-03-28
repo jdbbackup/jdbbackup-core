@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
@@ -34,12 +35,16 @@ class PluginRegistryTest {
 	@Test
 	void test() {
 		PluginRegistry<SourceManager> registry = new PluginRegistry<>(SourceManager.class, SourceManager::getScheme);
+		final Map<String, SourceManager> loaded = registry.getLoaded();
+		assertTrue(loaded.isEmpty());
 		assertFalse(registry.load(ClassLoader.getSystemClassLoader()).isEmpty());
+		assertFalse(loaded.isEmpty());
 		assertTrue(registry.load(ClassLoader.getSystemClassLoader()).isEmpty());
 		assertFalse(registry.register(new MySQLDumper()));
 		assertNull(registry.get("test"));
 		assertTrue(registry.register(new FakePlugin("test")));
 		assertNotNull(registry.get("test"));
+		assertNotNull(loaded.get("test"));
 		assertFalse(registry.register(new FakePlugin("test")));
 		assertTrue(registry.register(new FakePlugin(new MySQLDumper().getScheme())));
 	}

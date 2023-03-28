@@ -189,7 +189,7 @@ public abstract class AbstractPluginsDownloader {
 		return builder;
 	}
 
-	private HttpClient getHttpClient() {
+	protected HttpClient getHttpClient() {
 		if (httpClient==null) {
 			final Builder clientBuilder = HttpClient.newBuilder();
 			if (proxy!=null) {
