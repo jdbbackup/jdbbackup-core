@@ -5,12 +5,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
+import java.net.http.HttpRequest.Builder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
@@ -28,41 +26,48 @@ class AbstractPluginsDownloaderTest {
 	@Test
 	void test() throws IOException, InterruptedException {
 		try (MockWebServer server = new MockWebServer()) {
+			// Start the server.
 			server.setDispatcher(buildDispatcher());
+			server.start();
 			
 			final URI registryURI = server.url("/registry").uri();
 			final PluginRegistry<?> plugins = new PluginRegistry<>(Object.class, Object::toString); 
-			new AbstractPluginsDownloader(plugins, registryURI, directory) {
+			final AbstractPluginsDownloader downloader = new AbstractPluginsDownloader(plugins, registryURI, directory) {
 				@Override
 				protected Map<String, URI> getURIMap(InputStream in) throws IOException {
-					new String(in.readAllBytes(), StandardCharsets.UTF_8);
-					// TODO Auto-generated method stub
-					return null;
+					final String content = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+					if ("registryOk".equals(content)) {
+						return Collections.singletonMap("key", registryURI.resolve("/plugins/test.jar"));
+					} else {
+						throw new IOException("Not the right URI");
+					}
+				}
+
+				@Override
+				protected void customize(Builder requestBuilder) {
+					requestBuilder.header("myHeader", "aValue");
 				}
 			};
 			
-			// Schedule some responses.
-//			server.enqueue(new MockResponse().setBody("hello, world!"));
-//			server.enqueue(new MockResponse().setBody("sup, bra?"));
-//			server.enqueue(new MockResponse().setBody("yo dog"));
-
-			// Start the server.
-			server.start();
+			final Map<String, URI> map = downloader.getURIMap();
+			assertEquals(Collections.singletonMap("key", registryURI.resolve("/plugins/test.jar")), map);
+			RecordedRequest request = server.takeRequest();
+			assertEquals("aValue",request.getHeader("myHeader"));
 
 			// Ask the server for its URL. You'll need this to make HTTP requests.
-			URI baseUrl = server.url("/v1/chat/").uri();
-
-			final HttpClient client = HttpClient.newBuilder().build();
-			HttpResponse<String> resp = client.send(HttpRequest.newBuilder(baseUrl).build(), BodyHandlers.ofString());
-			System.out.println(resp.body());
-			resp = client.send(HttpRequest.newBuilder(baseUrl.resolve("xxx")).build(), BodyHandlers.ofString());
-			System.out.println(resp.body());
-			resp = client.send(HttpRequest.newBuilder(baseUrl.resolve("xxx")).build(), BodyHandlers.ofString());
-			System.out.println(resp.body());
-			RecordedRequest request = server.takeRequest();
-			System.out.println(request.getPath());
-			request = server.takeRequest();
-			System.out.println(request.getPath());
+//			URI baseUrl = server.url("/v1/chat/").uri();
+//
+//			final HttpClient client = HttpClient.newBuilder().build();
+//			HttpResponse<String> resp = client.send(HttpRequest.newBuilder(baseUrl).build(), BodyHandlers.ofString());
+//			System.out.println(resp.body());
+//			resp = client.send(HttpRequest.newBuilder(baseUrl.resolve("xxx")).build(), BodyHandlers.ofString());
+//			System.out.println(resp.body());
+//			resp = client.send(HttpRequest.newBuilder(baseUrl.resolve("xxx")).build(), BodyHandlers.ofString());
+//			System.out.println(resp.body());
+//			RecordedRequest request = server.takeRequest();
+//			System.out.println(request.getPath());
+//			request = server.takeRequest();
+//			System.out.println(request.getPath());
 		}
 	}
 
