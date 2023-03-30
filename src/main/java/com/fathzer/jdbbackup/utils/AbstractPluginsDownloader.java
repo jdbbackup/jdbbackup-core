@@ -87,22 +87,22 @@ public abstract class AbstractPluginsDownloader {
 	 * @param keys The plugin's keys to search
 	 * @throws IOException If something went wrong
 	 */
-	public void load(Set<String> keys) throws IOException {
-		if (keys.isEmpty()) {
+	public void load(String... keys) throws IOException {
+		if (keys.length==0) {
 			return;
 		}
 		final Map<String, URI> remoteRegistry = getURIMap();
-		checkMissingKeys(keys, k -> !remoteRegistry.containsKey(k));
+		checkMissingKeys(Arrays.stream(keys), k -> !remoteRegistry.containsKey(k));
 		if (!Files.exists(localDirectory)) {
 			Files.createDirectories(localDirectory);
 		}
-		final Set<URI> toDownload = keys.stream().map(remoteRegistry::get).collect(Collectors.toSet());
+		final Set<URI> toDownload = Arrays.stream(keys).map(remoteRegistry::get).collect(Collectors.toSet());
 		try {
 			final URL[] pluginsUrls = toDownload.stream().map(this::download).map(com.fathzer.jdbbackup.utils.Files::getURL).toArray(URL[]::new);
 			log.info("Start loading registry plugins from {}",Arrays.asList(pluginsUrls));
 			this.registry.load(new URLClassLoader(pluginsUrls));
 			log.info("registry plugins are loaded");
-			checkMissingKeys(keys, s -> this.registry.get(s)==null);
+			checkMissingKeys(Arrays.stream(keys), s -> this.registry.get(s)==null);
 		} catch (UncheckedIOException e) {
 			throw e.getCause();
 		}
@@ -142,8 +142,8 @@ public abstract class AbstractPluginsDownloader {
 	 * @param keys The keys to check.
 	 * @throws IllegalArgumentException if some keys are missing
 	 */
-	private void checkMissingKeys(Set<String> keys, Predicate<String> missingDetector) {
-		final Set<String> missing = keys.stream().filter(missingDetector).collect(Collectors.toSet());
+	private void checkMissingKeys(Stream<String> keys, Predicate<String> missingDetector) {
+		final Set<String> missing = keys.filter(missingDetector).collect(Collectors.toSet());
 		if (!missing.isEmpty()) {
 			throw new IllegalArgumentException(String.format("Unable to find the following %s: %s", pluginTypeWording, missing));
 		}
