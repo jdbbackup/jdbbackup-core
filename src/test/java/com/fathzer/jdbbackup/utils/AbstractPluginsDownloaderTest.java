@@ -38,6 +38,7 @@ import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.RecordedRequest;
 
 class AbstractPluginsDownloaderTest {
+	private static final String PLUGINS_JAR_URI_PATH = "/plugins/test.jar";
 	private static final String MISSING_JAR_PLUGIN_KEY = "missing";
 	private static final String VALID_PLUGIN_KEY = "test";
 	private static final String REGISTRY_OK_CONTENT = "registryOk";
@@ -53,7 +54,7 @@ class AbstractPluginsDownloaderTest {
 		private TestPluginDownloader(PluginRegistry<?> registry, URI uri, Path localDirectory) {
 			super(registry, uri, localDirectory);
 			map = new HashMap<>();
-			map.put(VALID_PLUGIN_KEY, getUri().resolve("/plugins/test.jar"));
+			map.put(VALID_PLUGIN_KEY, getUri().resolve(PLUGINS_JAR_URI_PATH));
 			map.put(MISSING_JAR_PLUGIN_KEY, getUri().resolve("/plugins/missing.jar"));
 		}
 
@@ -93,7 +94,7 @@ class AbstractPluginsDownloaderTest {
 		                return new MockResponse().setResponseCode(200).setBody(REGISTRY_OK_CONTENT);
 		            case "/registryKo":
 		                return new MockResponse().setResponseCode(200).setBody("registryKo");
-		            case "/plugins/test.jar":
+		            case PLUGINS_JAR_URI_PATH:
 		                return new MockResponse().setResponseCode(200).setBody(FAKE_JAR_FILE_CONTENT);
 		        }
 		        return new MockResponse().setResponseCode(404);
@@ -163,9 +164,20 @@ class AbstractPluginsDownloaderTest {
 	}
 	
 	@Test
+	void testEmptyDir(@TempDir Path dir) throws Exception {
+		final AbstractPluginsDownloader downloader = new TestPluginDownloader(null, server.url(REGISTRY_PATH).uri(), dir);
+
+		assertTrue(Files.deleteIfExists(dir), "Problem while deleting temp dir");
+		downloader.clean(); // Test no exception is thrown
+		Path path = downloader.download(server.url(PLUGINS_JAR_URI_PATH).uri());
+		assertTrue(Files.isRegularFile(path));
+		assertEquals(FAKE_JAR_FILE_CONTENT, Files.readAllLines(path).get(0));
+	}
+	
+	@Test
 	void testDownloadAndClean(@TempDir Path dir) throws IOException, InterruptedException {
 		final AbstractPluginsDownloader downloader = new TestPluginDownloader(null, server.url(REGISTRY_PATH).uri(), dir);
-		final URI existingURI = server.url("/plugins/test.jar").uri();
+		final URI existingURI = server.url(PLUGINS_JAR_URI_PATH).uri();
 		clearRequests();
 		Path path = downloader.download(existingURI);
 		assertTrue(Files.isRegularFile(path));

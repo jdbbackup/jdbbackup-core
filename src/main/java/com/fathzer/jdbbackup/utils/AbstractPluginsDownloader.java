@@ -93,9 +93,6 @@ public abstract class AbstractPluginsDownloader {
 		}
 		final Map<String, URI> remoteRegistry = getURIMap();
 		checkMissingKeys(Arrays.stream(keys), k -> !remoteRegistry.containsKey(k));
-		if (!Files.exists(localDirectory)) {
-			Files.createDirectories(localDirectory);
-		}
 		final Set<URI> toDownload = Arrays.stream(keys).map(remoteRegistry::get).collect(Collectors.toSet());
 		try {
 			final URL[] pluginsUrls = toDownload.stream().map(this::download).map(com.fathzer.jdbbackup.utils.Files::getURL).toArray(URL[]::new);
@@ -123,6 +120,9 @@ public abstract class AbstractPluginsDownloader {
 			customizeJarRequest(requestBuilder);
 			final HttpRequest request = requestBuilder.build();
 			try {
+				if (!Files.exists(localDirectory)) {
+					Files.createDirectories(localDirectory);
+				}
 				final BodyHandler<Path> bodyHandler = info -> info.statusCode() == 200 ? BodySubscribers.ofFile(file) : BodySubscribers.replacing(Paths.get("/NULL"));
 				final HttpResponse<Path> response = getHttpClient().send(request, bodyHandler);
 				if (response.statusCode()!=200) {
