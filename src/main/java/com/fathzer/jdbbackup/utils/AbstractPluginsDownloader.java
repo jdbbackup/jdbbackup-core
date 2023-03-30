@@ -119,7 +119,9 @@ public abstract class AbstractPluginsDownloader {
 			log.info("{} was already downloaded to file {}",uri, file);
 		} else {
 			log.info("Downloading {} to file {}",uri, file);
-			final HttpRequest request = getRequestBuilder().uri(uri).build();
+			final HttpRequest.Builder requestBuilder = getRequestBuilder().uri(uri);
+			customizeJarRequest(requestBuilder);
+			final HttpRequest request = requestBuilder.build();
 			try {
 				final BodyHandler<Path> bodyHandler = info -> info.statusCode() == 200 ? BodySubscribers.ofFile(file) : BodySubscribers.replacing(Paths.get("/NULL"));
 				final HttpResponse<Path> response = getHttpClient().send(request, bodyHandler);
@@ -155,7 +157,7 @@ public abstract class AbstractPluginsDownloader {
 	protected Map<String, URI> getURIMap() throws IOException {
 		log.info("Downloading {} registry at {}", pluginTypeWording, uri);
 		final HttpRequest.Builder requestBuilder = getRequestBuilder();
-		customize(requestBuilder);
+		customizeRegistryRequest(requestBuilder);
 		final HttpRequest request = requestBuilder.uri(uri).build();
 		try {
 			final HttpResponse<InputStream> response = getHttpClient().send(request, BodyHandlers.ofInputStream());
@@ -171,14 +173,22 @@ public abstract class AbstractPluginsDownloader {
 		}
 	}
 	
-	/** Allows sub-classes to custimize the request used to query the registry.
+	/** Allows sub-classes to customize the request used to query the registry.
 	 * <br>For example, a sub-class can add headers to the request with this method.
 	 * @param requestBuilder The request under construction.
 	 */
-	protected void customize(HttpRequest.Builder requestBuilder) {
+	protected void customizeRegistryRequest(HttpRequest.Builder requestBuilder) {
 		// Allows customization of request in sub-classes
 	}
-	
+
+	/** Allows sub-classes to customize the request used to download a jar.
+	 * <br>For example, a sub-class can add headers to the request with this method.
+	 * @param requestBuilder The request under construction.
+	 */
+	protected void customizeJarRequest(HttpRequest.Builder requestBuilder) {
+		// Allows customization of request in sub-classes
+	}
+
 	protected abstract Map<String, URI> getURIMap(InputStream in) throws IOException;
 
 	private HttpRequest.Builder getRequestBuilder() {
