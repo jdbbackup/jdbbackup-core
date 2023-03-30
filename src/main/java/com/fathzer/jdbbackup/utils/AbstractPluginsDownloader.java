@@ -56,6 +56,10 @@ public abstract class AbstractPluginsDownloader {
 		this.registry = registry;
 	}
 	
+	public URI getUri() {
+		return uri;
+	}
+
 	public void setProxy(ProxySettings proxy) {
 		this.proxy = proxy;
 	}

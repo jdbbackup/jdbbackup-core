@@ -80,7 +80,10 @@ class JDBBackupTest {
 		FakeJavaSource.shouldFail = true;
 		SimpleLogger log = (SimpleLogger) LoggerFactory.getLogger(com.fathzer.jdbbackup.sources.FakeJavaSource.class);
 		final int previous = LogUtils.setLevel(log, "off");
-		assertThrows(IOException.class, () -> b.backup(null, db, dest));
-		LogUtils.setLevel(log, previous);
+		try {
+			assertThrows(IOException.class, () -> b.backup(null, db, dest));
+		} finally {
+			LogUtils.setLevel(log, previous);
+		}
 	}
 }
