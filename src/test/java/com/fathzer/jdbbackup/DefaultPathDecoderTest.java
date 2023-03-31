@@ -68,7 +68,8 @@ class DefaultPathDecoderTest {
 	@Test
 	void testFile() {
 		final String filePath = "src/test/resources/"+this.getClass().getName().replace('.', '/')+".txt";
-		assertEquals("-File content\nsecond line",DefaultPathDecoder.INSTANCE.decodePath("-{f="+filePath+"}"));
+		final String decodedPath = DefaultPathDecoder.INSTANCE.decodePath("-{f="+filePath+"}");
+		assertEquals("-File content",decodedPath);
 		assertThrows(IllegalArgumentException.class, () -> DefaultPathDecoder.INSTANCE.decode("f","NotExisting"));
 		try (MockedStatic<Files> files = mockStatic(Files.class)) {
 			files.when(() -> Files.isRegularFile(any())).thenReturn(true);
