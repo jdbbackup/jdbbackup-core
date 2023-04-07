@@ -38,3 +38,5 @@ This library requires java 11+.
 
 *WORK in progress*
 
+## TODO
+Maybe it could be better to allow Proxy settings with Proxy and PassAuthentication instead of ProxySettings to limit dependencies to plugin-loader api to things related to plugin download

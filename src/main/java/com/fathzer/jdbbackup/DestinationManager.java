@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.function.Function;
 
-import com.fathzer.jdbbackup.utils.ProxySettings;
+import com.fathzer.plugin.loader.utils.ProxySettings;
 
 /** An abstract class to manage where backup are saved.
  */

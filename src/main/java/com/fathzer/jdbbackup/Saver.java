@@ -4,12 +4,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.function.Function;
 
-import com.fathzer.jdbbackup.utils.PluginRegistry;
-import com.fathzer.jdbbackup.utils.ProxySettings;
+import com.fathzer.plugin.loader.utils.PluginRegistry;
+import com.fathzer.plugin.loader.utils.ProxySettings;
 
 class Saver<T> {
 	@SuppressWarnings("rawtypes")
-	private static final PluginRegistry<DestinationManager> MANAGERS = new PluginRegistry<>(DestinationManager.class, DestinationManager::getScheme);
+	private static final PluginRegistry<DestinationManager> MANAGERS = new PluginRegistry<>(DestinationManager::getScheme);
 
 	private final Destination d;
 	private T dest;

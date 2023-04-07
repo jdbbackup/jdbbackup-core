@@ -19,19 +19,19 @@ class FilesTest {
 	@Test
 	void test() throws IOException {
 		final File nonExisting = mock(File.class);
-		assertEquals(0, Files.getJarURL(nonExisting, 1).length);
+		assertEquals(0, FileUtils.getJarURL(nonExisting, 1).length);
 
 		final File notJar = mock(File.class);
 		when(notJar.isFile()).thenReturn(true);
 		when(notJar.getName()).thenReturn("myFile.txt");
-		assertEquals(0, Files.getJarURL(notJar, 1).length);
+		assertEquals(0, FileUtils.getJarURL(notJar, 1).length);
 
 		final File fileJar = mock(File.class);
 		when(fileJar.isFile()).thenReturn(true);
 		when(fileJar.getName()).thenReturn("myLib.jar");
 		when(fileJar.toURI()).thenReturn(URI.create("file:/home/myLib.jar"));
 		
-		URL[] urls = Files.getJarURL(fileJar, 1);
+		URL[] urls = FileUtils.getJarURL(fileJar, 1);
 		assertArrayEquals(new URL[] {new URL("file:/home/myLib.jar")},urls);
 
 		final File dir = mock(File.class);
@@ -40,7 +40,7 @@ class FilesTest {
 		when(jarPath.toUri()).thenReturn(URI.create("file:/home/myLib.jar"));
 		try (MockedStatic<java.nio.file.Files> mockStatic = mockStatic(java.nio.file.Files.class)) {
 			mockStatic.when(() -> java.nio.file.Files.find(any(), anyInt(), any())).thenReturn(Arrays.asList(jarPath).stream());
-			assertArrayEquals(new URL[] {new URL("file:/home/myLib.jar")}, Files.getJarURL(dir, 1));
+			assertArrayEquals(new URL[] {new URL("file:/home/myLib.jar")}, FileUtils.getJarURL(dir, 1));
 		}
 	}
 	
@@ -52,15 +52,15 @@ class FilesTest {
 
 		final Path jarPath = mock(Path.class);
 		when(jarPath.toString()).thenReturn("/home/myLib.jar");
-		assertTrue(Files.IS_JAR.test(jarPath, attr));
+		assertTrue(FileUtils.IS_JAR.test(jarPath, attr));
 		
 		final Path notJar = mock(Path.class);
 		when(jarPath.toString()).thenReturn("/home/myFile.txt");
-		assertFalse(Files.IS_JAR.test(notJar, attr));
+		assertFalse(FileUtils.IS_JAR.test(notJar, attr));
 
 		// Test dir
 		when(attr.isRegularFile()).thenReturn(false);
-		assertFalse(Files.IS_JAR.test(jarPath, attr));
-		assertFalse(Files.IS_JAR.test(notJar, attr));
+		assertFalse(FileUtils.IS_JAR.test(jarPath, attr));
+		assertFalse(FileUtils.IS_JAR.test(notJar, attr));
 	}
 }

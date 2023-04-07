@@ -12,12 +12,12 @@ import java.util.stream.Stream;
 
 /** Some utilities about files.
  */
-public class Files {
+public class FileUtils {
     private static final String JAR_EXTENSION = ".jar";
     
 	static final BiPredicate<Path, BasicFileAttributes> IS_JAR = (p, bfa) -> bfa.isRegularFile() && p.toString().endsWith(JAR_EXTENSION);
 
-    private Files() {
+    private FileUtils() {
 		super();
 	}
     
@@ -46,7 +46,7 @@ public class Files {
 	public static URL[] getJarURL(File root, int depth) throws IOException {
 		if (root.isDirectory()) {
 			try (Stream<Path> files = java.nio.file.Files.find(root.toPath(), depth, IS_JAR)) {
-				return files.map(Files::getURL).toArray(URL[]::new);
+				return files.map(FileUtils::getURL).toArray(URL[]::new);
 		    }
 		} else if (root.isFile() && root.getName().endsWith(JAR_EXTENSION)) {
 			return new URL[] {root.toURI().toURL()};

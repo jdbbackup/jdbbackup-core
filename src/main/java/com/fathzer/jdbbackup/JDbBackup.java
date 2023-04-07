@@ -14,13 +14,14 @@ import java.util.stream.Collectors;
 
 import org.slf4j.LoggerFactory;
 
-import com.fathzer.jdbbackup.utils.PluginRegistry;
-import com.fathzer.jdbbackup.utils.ProxySettings;
+import com.fathzer.plugin.loader.utils.PluginRegistry;
+import com.fathzer.plugin.loader.utils.ProxySettings;
+
 
 /** A class able to perform a data source backup.
  */
 public class JDbBackup {
-	private static final PluginRegistry<SourceManager> SOURCES = new PluginRegistry<>(SourceManager.class, SourceManager::getScheme);
+	private static final PluginRegistry<SourceManager> SOURCES = new PluginRegistry<>(SourceManager::getScheme);
 	
 	static {
 		loadPlugins(ClassLoader.getSystemClassLoader());
