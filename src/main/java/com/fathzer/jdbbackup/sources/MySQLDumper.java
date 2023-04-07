@@ -5,7 +5,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fathzer.jdbbackup.utils.LoginParser;
+import com.fathzer.plugin.loader.utils.LoginParser;
 
 /** A source manager that dumps MYSQL database.
  * <br>It requires mysqldump to be installed on the machine.

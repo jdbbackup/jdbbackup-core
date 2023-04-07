@@ -7,8 +7,8 @@ import java.lang.reflect.Field;
 
 import org.junit.jupiter.api.Test;
 
-import com.fathzer.jdbbackup.utils.PluginRegistry;
-import com.fathzer.jdbbackup.utils.ProxySettings;
+import com.fathzer.plugin.loader.utils.PluginRegistry;
+import com.fathzer.plugin.loader.utils.ProxySettings;
 
 class SaverTest {
 

@@ -42,6 +42,9 @@ public abstract class AbstractPluginsDownloader<T> extends com.fathzer.plugin.lo
 	}
 	
 	@Override
+	/** {@inheritDoc}
+	 * Please note that if an IOException occurs, the registry remains unchanged (nothing is loaded if a path is, for example, unreadable).
+	 */
 	protected void load(Collection<Path> paths) throws IOException {
 		final PluginLoader<Path> loader = new JarPluginLoader();
 		final Plugins<T> plugins = new Plugins<>(getPluginClass());

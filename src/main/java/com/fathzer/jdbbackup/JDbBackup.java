@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.util.Arrays;
@@ -12,8 +13,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fathzer.jdbbackup.utils.AbstractPluginsDownloader;
+import com.fathzer.plugin.loader.Plugins;
+import com.fathzer.plugin.loader.classloader.ClassLoaderPluginLoader;
 import com.fathzer.plugin.loader.utils.PluginRegistry;
 import com.fathzer.plugin.loader.utils.ProxySettings;
 
@@ -21,10 +26,15 @@ import com.fathzer.plugin.loader.utils.ProxySettings;
 /** A class able to perform a data source backup.
  */
 public class JDbBackup {
+	private static final Logger log = LoggerFactory.getLogger(AbstractPluginsDownloader.class);
 	private static final PluginRegistry<SourceManager> SOURCES = new PluginRegistry<>(SourceManager::getScheme);
 	
 	static {
-		loadPlugins(ClassLoader.getSystemClassLoader());
+		try {
+			loadPlugins(null);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
 	}
 	
 	/** Loads extra plugins.
@@ -35,12 +45,18 @@ public class JDbBackup {
 	 * @see SourceManager
 	 * @see DestinationManager
 	 */
-	public static boolean loadPlugins(ClassLoader... classLoaders) {
-		boolean newSources = !SOURCES.load(classLoaders).isEmpty();
-		boolean newDestinations = !Saver.getManagers().load(classLoaders).isEmpty();
+	public static boolean loadPlugins(ClassLoader classLoader) throws IOException {
+		final ClassLoaderPluginLoader loader = new ClassLoaderPluginLoader();
+		boolean newSources = !load(SOURCES, loader.getPlugins(classLoader, SourceManager.class)).isEmpty();
+		boolean newDestinations = !load(Saver.getManagers(), loader.getPlugins(classLoader, DestinationManager.class)).isEmpty();
 		return newSources || newDestinations;
 	}
 	
+	private static <T> List<T> load(PluginRegistry<T> registry, Plugins<T> plugins) {
+		plugins.getExceptions().stream().forEach(e -> log.warn("An error occured while loading plugins", e));
+		return registry.registerAll(plugins.getInstances());
+	}
+
 	/** Gets the source managers registry.
 	 * @return a plugin registry
 	 */

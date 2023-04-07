@@ -10,7 +10,7 @@ import java.util.function.Function;
 
 import com.fathzer.jdbbackup.DefaultPathDecoder;
 import com.fathzer.jdbbackup.DestinationManager;
-import com.fathzer.jdbbackup.utils.ProxySettings;
+import com.fathzer.plugin.loader.utils.ProxySettings;
 
 /** A destination manager that saves the backups locally.
  * <br>It uses an instance of {@link DefaultPathDecoder} in order to build the destination path.
