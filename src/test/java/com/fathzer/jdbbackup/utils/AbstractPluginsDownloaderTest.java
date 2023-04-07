@@ -119,14 +119,14 @@ class AbstractPluginsDownloaderTest {
 	}
 	
 	@Test
-	void testUnknownURI() throws IOException {
+	void testUnknownURI(@TempDir Path dir) throws IOException {
 		final PluginRegistry<Object> plugins = new PluginRegistry<>(Object::toString);
 		{
-			final AbstractPluginsDownloader<Object> downloader = new TestPluginDownloader<>(plugins, server.url("/registryKo").uri(), null, Object.class);
+			final AbstractPluginsDownloader<Object> downloader = new TestPluginDownloader<>(plugins, server.url("/registryKo").uri(), dir, Object.class);
 			assertThrows (IOException.class, () -> downloader.getURIMap());
 		}
 
-		final AbstractPluginsDownloader<Object> downloader = new TestPluginDownloader<>(plugins, server.url("/registryUnknown").uri(), null, Object.class);
+		final AbstractPluginsDownloader<Object> downloader = new TestPluginDownloader<>(plugins, server.url("/registryUnknown").uri(), dir, Object.class);
 		assertThrows (IOException.class, () -> downloader.getURIMap());
 	}
 /*
