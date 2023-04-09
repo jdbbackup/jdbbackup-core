@@ -3,14 +3,15 @@ package com.fathzer.jdbbackup.utils;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fathzer.plugin.loader.PluginLoader;
-import com.fathzer.plugin.loader.Plugins;
 import com.fathzer.plugin.loader.jar.JarPluginLoader;
 import com.fathzer.plugin.loader.utils.PluginRegistry;
 
@@ -18,6 +19,7 @@ import com.fathzer.plugin.loader.utils.PluginRegistry;
  */
 public abstract class AbstractPluginsDownloader<T> extends com.fathzer.plugin.loader.utils.AbstractPluginsDownloader<T> {
 	private static final Logger log = LoggerFactory.getLogger(AbstractPluginsDownloader.class);
+	private final Class<T> pluginClass;
 	
 	/** Constructor.
 	 * @param registry The registry where plugins are loaded.
@@ -25,7 +27,8 @@ public abstract class AbstractPluginsDownloader<T> extends com.fathzer.plugin.lo
 	 * @param localDirectory The folder where plugins jar files will be loaded.
 	 */
 	protected AbstractPluginsDownloader(PluginRegistry<T> registry, URI uri, Path localDirectory, Class<T> pluginClass) {
-		super(registry, uri, localDirectory, pluginClass);
+		super(registry, uri, localDirectory);
+		this.pluginClass = pluginClass;
 	}
 
 	
@@ -44,17 +47,16 @@ public abstract class AbstractPluginsDownloader<T> extends com.fathzer.plugin.lo
 	@Override
 	/** {@inheritDoc}
 	 * Please note that if an IOException occurs, the registry remains unchanged (nothing is loaded if a path is, for example, unreadable).
+	 * <br>If a PluginInstantiation occurs, the error is logged and the process continues to load other plugins.
 	 */
 	protected void load(Collection<Path> paths) throws IOException {
-		final PluginLoader<Path> loader = new JarPluginLoader();
-		final Plugins<T> plugins = new Plugins<>(getPluginClass());
+		final PluginLoader<Path> loader = new JarPluginLoader().withExceptionConsumer(e -> log.warn(getPluginTypeWording(), e));
+		final List<T> plugins = new ArrayList<>();
 		for (Path path : paths) {
 			log.info("Loading repository plugins from {}",path);
-			final Plugins<T> pathPlugins = loader.getPlugins(path, getPluginClass());
-			pathPlugins.getExceptions().forEach(e -> log.warn(getPluginTypeWording(), e));
-			plugins.add(pathPlugins);
+			plugins.addAll(loader.getPlugins(path, pluginClass));
 		}
-		plugins.getInstances().stream().forEach(this.getRegistry()::register);
+		this.getRegistry().registerAll(plugins);
 		log.info("registry plugins are loaded");
 	}
 	

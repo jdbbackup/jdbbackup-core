@@ -17,11 +17,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fathzer.jdbbackup.utils.AbstractPluginsDownloader;
-import com.fathzer.plugin.loader.Plugins;
+import com.fathzer.plugin.loader.PluginLoader;
 import com.fathzer.plugin.loader.classloader.ClassLoaderPluginLoader;
 import com.fathzer.plugin.loader.utils.PluginRegistry;
 import com.fathzer.plugin.loader.utils.ProxySettings;
-
 
 /** A class able to perform a data source backup.
  */
@@ -46,15 +45,10 @@ public class JDbBackup {
 	 * @see DestinationManager
 	 */
 	public static boolean loadPlugins(ClassLoader classLoader) throws IOException {
-		final ClassLoaderPluginLoader loader = new ClassLoaderPluginLoader();
-		boolean newSources = !load(SOURCES, loader.getPlugins(classLoader, SourceManager.class)).isEmpty();
-		boolean newDestinations = !load(Saver.getManagers(), loader.getPlugins(classLoader, DestinationManager.class)).isEmpty();
+		final PluginLoader<ClassLoader> loader = new ClassLoaderPluginLoader().withExceptionConsumer(e -> log.warn("An error occured while loading plugins", e));
+		boolean newSources = !SOURCES.registerAll(loader.getPlugins(classLoader, SourceManager.class)).isEmpty();
+		boolean newDestinations = !Saver.getManagers().registerAll(loader.getPlugins(classLoader, DestinationManager.class)).isEmpty();
 		return newSources || newDestinations;
-	}
-	
-	private static <T> List<T> load(PluginRegistry<T> registry, Plugins<T> plugins) {
-		plugins.getExceptions().stream().forEach(e -> log.warn("An error occured while loading plugins", e));
-		return registry.registerAll(plugins.getInstances());
 	}
 
 	/** Gets the source managers registry.
