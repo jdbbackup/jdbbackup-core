@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fathzer.jdbbackup.utils.AbstractPluginsDownloader;
 import com.fathzer.plugin.loader.PluginLoader;
 import com.fathzer.plugin.loader.classloader.ClassLoaderPluginLoader;
 import com.fathzer.plugin.loader.utils.PluginRegistry;
@@ -25,7 +24,7 @@ import com.fathzer.plugin.loader.utils.ProxySettings;
 /** A class able to perform a data source backup.
  */
 public class JDbBackup {
-	private static final Logger log = LoggerFactory.getLogger(AbstractPluginsDownloader.class);
+	private static final Logger log = LoggerFactory.getLogger(JDbBackup.class);
 	private static final PluginRegistry<SourceManager> SOURCES = new PluginRegistry<>(SourceManager::getScheme);
 	
 	static {

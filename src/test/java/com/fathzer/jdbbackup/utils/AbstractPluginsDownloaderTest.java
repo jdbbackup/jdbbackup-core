@@ -7,7 +7,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -51,11 +50,11 @@ class AbstractPluginsDownloaderTest {
 	private static final String REGISTRY_HEADER_VALUE = "registry";
 	private static final String JAR_HEADER_VALUE = "jar";
 
-	private final class TestPluginDownloader<T> extends AbstractPluginsDownloader<T> {
+	private final class TestPluginDownloader extends AbstractPluginsDownloader<Object> {
 		private final Map<String,URI> map;
 		
-		private TestPluginDownloader(PluginRegistry<T> registry, URI uri, Path localDirectory, Class<T> pClass) {
-			super(registry, uri, localDirectory, pClass);
+		private TestPluginDownloader(PluginRegistry<Object> registry, URI uri, Path localDirectory) {
+			super(registry==null ? new PluginRegistry<>(Object::toString): registry, uri, localDirectory, Object.class);
 			map = new HashMap<>();
 			map.put(VALID_PLUGIN_KEY, getUri().resolve(PLUGINS_JAR_URI_PATH));
 			map.put(MISSING_JAR_PLUGIN_KEY, getUri().resolve("/plugins/missing.jar"));
@@ -83,6 +82,16 @@ class AbstractPluginsDownloaderTest {
 			HttpRequest.Builder requestBuilder = super.getJarRequestBuilder(uri);
 			requestBuilder.header(CUSTOM_HEADER, JAR_HEADER_VALUE);
 			return requestBuilder;
+		}
+
+		@Override
+		public Path getDownloadTarget(URI uri) {
+			return super.getDownloadTarget(uri);
+		}
+
+		@Override
+		public void download(URI uri, Path path) throws IOException {
+			super.download(uri, path);
 		}
 	}
 
@@ -120,13 +129,12 @@ class AbstractPluginsDownloaderTest {
 	
 	@Test
 	void testUnknownURI(@TempDir Path dir) throws IOException {
-		final PluginRegistry<Object> plugins = new PluginRegistry<>(Object::toString);
 		{
-			final AbstractPluginsDownloader<Object> downloader = new TestPluginDownloader<>(plugins, server.url("/registryKo").uri(), dir, Object.class);
+			final AbstractPluginsDownloader<Object> downloader = new TestPluginDownloader(null, server.url("/registryKo").uri(), dir);
 			assertThrows (IOException.class, () -> downloader.getURIMap());
 		}
 
-		final AbstractPluginsDownloader<Object> downloader = new TestPluginDownloader<>(plugins, server.url("/registryUnknown").uri(), dir, Object.class);
+		final AbstractPluginsDownloader<Object> downloader = new TestPluginDownloader(null, server.url("/registryUnknown").uri(), dir);
 		assertThrows (IOException.class, () -> downloader.getURIMap());
 	}
 /*
@@ -167,44 +175,44 @@ class AbstractPluginsDownloaderTest {
 		// Test load nothing doesn't throw exception
 		downloader.load();
 	}
-/*	
+	*/
 	@Test
 	void testEmptyDir(@TempDir Path dir) throws Exception {
-		final AbstractPluginsDownloader downloader = new TestPluginDownloader(null, server.url(REGISTRY_PATH).uri(), dir);
-
+		final TestPluginDownloader downloader = new TestPluginDownloader(null, server.url(REGISTRY_PATH).uri(), dir);
 		assertTrue(Files.deleteIfExists(dir), "Problem while deleting temp dir");
-		downloader.clean(); // Test no exception is thrown
-		Path path = downloader.download(server.url(PLUGINS_JAR_URI_PATH).uri());
+		assertFalse(downloader.clean()); // Test no exception is thrown when dir does not exists
+		final URI uri = server.url(PLUGINS_JAR_URI_PATH).uri();
+		final Path path = downloader.getDownloadTarget(uri);
+		downloader.download(uri, path);
 		assertTrue(Files.isRegularFile(path));
 		assertEquals(FAKE_JAR_FILE_CONTENT, Files.readAllLines(path).get(0));
-	}*/
-/*	
+	}
+	
 	@Test
 	void testDownloadAndClean(@TempDir Path dir) throws IOException, InterruptedException {
-		final AbstractPluginsDownloader downloader = new TestPluginDownloader(null, server.url(REGISTRY_PATH).uri(), dir);
+		final TestPluginDownloader downloader = new TestPluginDownloader(null, server.url(REGISTRY_PATH).uri(), dir);
 		final URI existingURI = server.url(PLUGINS_JAR_URI_PATH).uri();
 		clearRequests();
-		Path path = downloader.download(existingURI);
+		Path path = downloader.getDownloadTarget(existingURI);
+		downloader.download(existingURI, path);
 		assertTrue(Files.isRegularFile(path));
 		assertEquals(FAKE_JAR_FILE_CONTENT, Files.readAllLines(path).get(0));
 		
 		// Test already downloaded jar is not reloaded
-		final FileTime lastModifiedTime = Files.getLastModifiedTime(path);
-		Path path2 = downloader.download(existingURI);
-		assertEquals(path, path2);
-		assertEquals(lastModifiedTime, Files.getLastModifiedTime(path));
+		assertFalse(downloader.shouldLoad(existingURI, path));
 		
 		RecordedRequest request = server.takeRequest();
 		assertEquals(JAR_HEADER_VALUE, request.getHeader(CUSTOM_HEADER));
 		
-		downloader.clean();
+		assertTrue(downloader.clean());
 		assertFalse(Files.isRegularFile(path));
 
 		final URI missingURI = server.url("/plugins/missing.jar").uri();
-		assertThrows(UncheckedIOException.class, ()->downloader.download(missingURI));
+		final Path path2 = downloader.getDownloadTarget(missingURI);
+		assertThrows(IOException.class, ()->downloader.download(missingURI, path2));
 	}
 
 	private void clearRequests() throws InterruptedException {
 		do {} while(server.takeRequest(100, TimeUnit.MILLISECONDS)!=null);
-	}*/
+	}
 }
