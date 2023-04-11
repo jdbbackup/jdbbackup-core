@@ -1,4 +1,4 @@
-package com.fathzer.jdbbackup.managers.local;
+package com.fathzer.jdbbackup.destinations;
 
 import static org.junit.jupiter.api.Assertions.*;
 

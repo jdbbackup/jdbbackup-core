@@ -1,4 +1,4 @@
-package com.fathzer.jdbbackup.managers.local;
+package com.fathzer.jdbbackup.destinations;
 
 import java.io.File;
 import java.io.IOException;

@@ -13,12 +13,13 @@ import org.slf4j.LoggerFactory;
 
 import com.fathzer.plugin.loader.PluginLoader;
 import com.fathzer.plugin.loader.jar.JarPluginLoader;
+import com.fathzer.plugin.loader.utils.AbstractPluginsDownloader;
 import com.fathzer.plugin.loader.utils.PluginRegistry;
 
 /** A class that loads plugins from an Internet remote repository.
  */
-public abstract class AbstractPluginsDownloader<T> extends com.fathzer.plugin.loader.utils.AbstractPluginsDownloader<T> {
-	private static final Logger log = LoggerFactory.getLogger(AbstractPluginsDownloader.class);
+public abstract class AbstractManagersDownloader<T> extends AbstractPluginsDownloader<T> {
+	private static final Logger log = LoggerFactory.getLogger(AbstractManagersDownloader.class);
 	private final Class<T> pluginClass;
 	
 	/** Constructor.
@@ -26,7 +27,7 @@ public abstract class AbstractPluginsDownloader<T> extends com.fathzer.plugin.lo
 	 * @param uri The uri where to load the remote plugin registry.
 	 * @param localDirectory The folder where plugins jar files will be loaded.
 	 */
-	protected AbstractPluginsDownloader(PluginRegistry<T> registry, URI uri, Path localDirectory, Class<T> pluginClass) {
+	protected AbstractManagersDownloader(PluginRegistry<T> registry, URI uri, Path localDirectory, Class<T> pluginClass) {
 		super(registry, uri, localDirectory);
 		this.pluginClass = pluginClass;
 	}

@@ -34,7 +34,7 @@ import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.RecordedRequest;
 
-class AbstractPluginsDownloaderTest {
+class AbstractManagersDownloaderTest {
 	private static final String PLUGINS_JAR_URI_PATH = "/plugins/test.jar";
 	private static final String MISSING_JAR_PLUGIN_KEY = "missing";
 	private static final String VALID_PLUGIN_KEY = "test";
@@ -45,7 +45,7 @@ class AbstractPluginsDownloaderTest {
 	private static final String REGISTRY_HEADER_VALUE = "registry";
 	private static final String JAR_HEADER_VALUE = "jar";
 
-	private final class TestPluginDownloader extends AbstractPluginsDownloader<Object> {
+	private final class TestPluginDownloader extends AbstractManagersDownloader<Object> {
 		private final Map<String,URI> map;
 		
 		private TestPluginDownloader(PluginRegistry<Object> registry, URI uri, Path localDirectory) {
@@ -118,23 +118,23 @@ class AbstractPluginsDownloaderTest {
 		// Start the server.
 		server.setDispatcher(dispatcher);
 		server.start();
-		previousLogLevel = LogUtils.setLevel((SimpleLogger) LoggerFactory.getLogger(AbstractPluginsDownloader.class), "off");
+		previousLogLevel = LogUtils.setLevel((SimpleLogger) LoggerFactory.getLogger(AbstractManagersDownloader.class), "off");
 	}
 	
 	@AfterAll
 	static void cleanUp() throws IOException {
-		LogUtils.setLevel((SimpleLogger) LoggerFactory.getLogger(AbstractPluginsDownloader.class), previousLogLevel);
+		LogUtils.setLevel((SimpleLogger) LoggerFactory.getLogger(AbstractManagersDownloader.class), previousLogLevel);
 		server.close();
 	}
 	
 	@Test
 	void testUnknownURI(@TempDir Path dir) throws IOException {
 		{
-			final AbstractPluginsDownloader<Object> downloader = new TestPluginDownloader(null, server.url("/registryKo").uri(), dir);
+			final AbstractManagersDownloader<Object> downloader = new TestPluginDownloader(null, server.url("/registryKo").uri(), dir);
 			assertThrows (IOException.class, () -> downloader.getURIMap());
 		}
 
-		final AbstractPluginsDownloader<Object> downloader = new TestPluginDownloader(null, server.url("/registryUnknown").uri(), dir);
+		final AbstractManagersDownloader<Object> downloader = new TestPluginDownloader(null, server.url("/registryUnknown").uri(), dir);
 		assertThrows (IOException.class, () -> downloader.getURIMap());
 	}
 
