@@ -7,15 +7,11 @@ import java.util.function.Function;
 import com.fathzer.plugin.loader.utils.ProxySettings;
 
 /** An abstract class to manage where backup are saved.
+ * <br>If the manager can use a proxy to connect to a remote source, it should implement {@link ProxyCompliant} interface.
  */
 public interface DestinationManager<T> {
 	/** The / character.*/
 	public static final char URI_PATH_SEPARATOR = '/';
-	
-	/** Sets the proxy configuration of this manager.
-	 * @param options The proxy options
-	 */
-	void setProxy(final ProxySettings options);
 	
 	/** Gets the string that identifies the protocol.
 	 * <br>Example file, dropbox, sftp. This destination manager will have to process all file transfers related to destinations that begins with <i>protocol</i>:// 

@@ -2,10 +2,11 @@ package com.fathzer.jdbbackup;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.PasswordAuthentication;
+import java.net.Proxy;
 import java.util.function.Function;
 
 import com.fathzer.plugin.loader.utils.PluginRegistry;
-import com.fathzer.plugin.loader.utils.ProxySettings;
 
 class Saver<T> {
 	@SuppressWarnings("rawtypes")
@@ -29,8 +30,17 @@ class Saver<T> {
 		return MANAGERS;
 	}
 
-	void setProxy(ProxySettings proxySettings) {
-		manager.setProxy(proxySettings);
+	void setProxy(Proxy proxy, PasswordAuthentication auth) {
+		if (proxy==null) {
+			throw new IllegalArgumentException("Use Proxy.NO_PROXY instead of null");
+		}
+		if (Proxy.NO_PROXY.equals(proxy) && auth!=null) {
+			throw new IllegalArgumentException("Can't set no proxy with login");
+		}
+		if (manager instanceof ProxyCompliant) {
+			((ProxyCompliant)manager).setProxy(proxy);
+			((ProxyCompliant)manager).setProxyAuth(auth);
+		}
 	}
 	
 	void prepare(Function<String,CharSequence> extensionBuilder) {

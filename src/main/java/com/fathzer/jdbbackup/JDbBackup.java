@@ -6,6 +6,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.net.PasswordAuthentication;
+import java.net.Proxy;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.util.Arrays;
@@ -77,12 +79,11 @@ public class JDbBackup {
 			throw new IllegalArgumentException();
 		}
 		final List<Saver<?>> dest = Arrays.stream(destinations).map(Destination::new).map(Saver::new).collect(Collectors.toList());
-		if (proxySettings!=null) {
-			dest.forEach(d -> d.setProxy(proxySettings));
-		}
+		final Proxy proxy = proxySettings==null ? Proxy.NO_PROXY : proxySettings.toProxy();
+		final PasswordAuthentication auth = proxySettings==null ? null : proxySettings.getLogin();
 		final File tmpFile = createTempFile();
 		try {
-			backup(source, tmpFile, dest);
+			backup(source, tmpFile, dest, proxy, auth);
 		} finally {
 			Files.delete(tmpFile.toPath());
 		}
@@ -110,11 +111,16 @@ public class JDbBackup {
 		return tmpFile;
 	}
 	
-	private void backup(String source, File tmpFile, Collection<Saver<?>> savers) throws IOException {
-		SourceManager sourceManager = getSourceManager(new Destination(source).getScheme());
+	private void backup(String source, File tmpFile, Collection<Saver<?>> savers, Proxy proxy, PasswordAuthentication proxyAuth) throws IOException {
+		final SourceManager sourceManager = getSourceManager(new Destination(source).getScheme());
+		if (sourceManager instanceof ProxyCompliant) {
+			((ProxyCompliant)sourceManager).setProxy(proxy);
+			((ProxyCompliant)sourceManager).setProxyAuth(proxyAuth);
+		}
 		savers.forEach(s->s.prepare(sourceManager.getExtensionBuilder()));
 		sourceManager.save(source, tmpFile);
 		for (Saver<?> s : savers) {
+			s.setProxy(proxy, proxyAuth);
 			try (InputStream in = new BufferedInputStream(new FileInputStream(tmpFile))) {
 				s.send(in, tmpFile.length());
 			}

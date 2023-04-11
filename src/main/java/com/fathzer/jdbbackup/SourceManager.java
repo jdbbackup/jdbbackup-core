@@ -7,6 +7,7 @@ import java.util.function.Function;
 import com.fathzer.jdbbackup.utils.BasicExtensionBuilder;
 
 /** A class able to dump a data source to a file.
+ * <br>If the manager can use a proxy to connect to a remote source, it should implement {@link ProxyCompliant} interface.
  */
 public interface SourceManager {
 
