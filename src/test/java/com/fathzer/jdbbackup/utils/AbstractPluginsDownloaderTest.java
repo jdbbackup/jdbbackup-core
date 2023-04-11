@@ -1,23 +1,17 @@
 package com.fathzer.jdbbackup.utils;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.net.http.HttpRequest;
-import java.net.http.HttpRequest.Builder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.FileTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -27,11 +21,12 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.ArgumentCaptor;
+import org.mockito.MockedConstruction;
 import org.slf4j.LoggerFactory;
 import org.slf4j.simple.LogUtils;
 import org.slf4j.simple.SimpleLogger;
 
+import com.fathzer.plugin.loader.jar.JarPluginLoader;
 import com.fathzer.plugin.loader.utils.PluginRegistry;
 
 import okhttp3.mockwebserver.MockResponse;
@@ -93,6 +88,11 @@ class AbstractPluginsDownloaderTest {
 		public void download(URI uri, Path path) throws IOException {
 			super.download(uri, path);
 		}
+
+		@Override
+		public PluginRegistry<Object> getRegistry() {
+			return super.getRegistry();
+		}
 	}
 
 	private static MockWebServer server;
@@ -137,12 +137,10 @@ class AbstractPluginsDownloaderTest {
 		final AbstractPluginsDownloader<Object> downloader = new TestPluginDownloader(null, server.url("/registryUnknown").uri(), dir);
 		assertThrows (IOException.class, () -> downloader.getURIMap());
 	}
-/*
+
 	@Test
 	void test(@TempDir Path dir) throws Exception {
-		@SuppressWarnings("unchecked")
-		PluginRegistry<Object> registry = mock(PluginRegistry.class);
-		final AbstractPluginsDownloader<Object> downloader = new TestPluginDownloader<>(registry, server.url(REGISTRY_PATH).uri(), dir, Object.class);
+		final TestPluginDownloader downloader = new TestPluginDownloader(null, server.url(REGISTRY_PATH).uri(), dir);
 		
 		// Test getting remote plugins map is correct
 		clearRequests();
@@ -151,20 +149,16 @@ class AbstractPluginsDownloaderTest {
 		RecordedRequest request = server.takeRequest();
 		assertEquals(REGISTRY_HEADER_VALUE,request.getHeader(CUSTOM_HEADER));
 
-		// Test load of a valid key
-		when(registry.get(VALID_PLUGIN_KEY)).thenReturn("ok");
-		downloader.load(VALID_PLUGIN_KEY);
-		// check right class loader was passed to registry (a URL classLoader on the right file)
-		final ArgumentCaptor<ClassLoader[]> argumentCaptor = ArgumentCaptor.forClass(ClassLoader[].class);
-		verify(registry).load(argumentCaptor.capture());
-		final ClassLoader[] classLoaders = argumentCaptor.getValue();
-		assertEquals(1, classLoaders.length);
-		assertEquals(URLClassLoader.class,classLoaders[0].getClass());
-		final URL[] urLs = ((URLClassLoader)classLoaders[0]).getURLs();
-		assertEquals(1, urLs.length);
-		final Path path = Paths.get(urLs[0].toURI());
-		assertTrue(Files.isRegularFile(path));
-		assertEquals(FAKE_JAR_FILE_CONTENT, Files.readAllLines(path).get(0));
+		// Test load of remote plugins
+		try (MockedConstruction<JarPluginLoader> jarLoader = mockConstruction(JarPluginLoader.class,
+				(jl,context) -> {
+					when(jl.withExceptionConsumer(any())).thenReturn(jl);
+					when(jl.getPlugins(argThat(p -> p.getFileName().endsWith("test.jar")), any())).thenReturn(Collections.singletonList(VALID_PLUGIN_KEY));
+				}))	{
+			// Test load of a valid key
+			downloader.load(VALID_PLUGIN_KEY);
+			assertNotNull(downloader.getRegistry().get(VALID_PLUGIN_KEY));
+		}
 		
 		// Test load of a key missing in registry
 		assertThrows(IllegalArgumentException.class, () -> downloader.load("Not in registry"));
@@ -175,7 +169,7 @@ class AbstractPluginsDownloaderTest {
 		// Test load nothing doesn't throw exception
 		downloader.load();
 	}
-	*/
+	
 	@Test
 	void testEmptyDir(@TempDir Path dir) throws Exception {
 		final TestPluginDownloader downloader = new TestPluginDownloader(null, server.url(REGISTRY_PATH).uri(), dir);
