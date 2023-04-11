@@ -22,12 +22,8 @@ class SaverTest {
 		private PasswordAuthentication proxyAuth;
 		
 		@Override
-		public void setProxy(Proxy proxy) {
+		public void setProxy(Proxy proxy, PasswordAuthentication auth) {
 			this.proxy = proxy;
-		}
-
-		@Override
-		public void setProxyAuth(PasswordAuthentication auth) {
 			this.proxyAuth = auth;
 		}
 

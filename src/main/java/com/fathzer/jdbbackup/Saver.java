@@ -8,7 +8,7 @@ import java.util.function.Function;
 
 import com.fathzer.plugin.loader.utils.PluginRegistry;
 
-class Saver<T> {
+class Saver<T> implements ProxyCompliant {
 	@SuppressWarnings("rawtypes")
 	private static final PluginRegistry<DestinationManager> MANAGERS = new PluginRegistry<>(DestinationManager::getScheme);
 
@@ -30,16 +30,11 @@ class Saver<T> {
 		return MANAGERS;
 	}
 
-	void setProxy(Proxy proxy, PasswordAuthentication auth) {
-		if (proxy==null) {
-			throw new IllegalArgumentException("Use Proxy.NO_PROXY instead of null");
-		}
-		if (Proxy.NO_PROXY.equals(proxy) && auth!=null) {
-			throw new IllegalArgumentException("Can't set no proxy with login");
-		}
+	@Override
+	public void setProxy(Proxy proxy, PasswordAuthentication auth) {
+		ProxyCompliant.super.setProxy(proxy, auth);
 		if (manager instanceof ProxyCompliant) {
-			((ProxyCompliant)manager).setProxy(proxy);
-			((ProxyCompliant)manager).setProxyAuth(auth);
+			((ProxyCompliant)manager).setProxy(proxy, auth);
 		}
 	}
 	

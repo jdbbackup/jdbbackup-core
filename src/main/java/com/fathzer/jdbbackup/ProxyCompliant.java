@@ -8,11 +8,16 @@ import java.net.Proxy;
 public interface ProxyCompliant {
 	/** Sets the proxy.
 	 * @param proxy The proxy to use to connect to destination ({@link Proxy#NO_PROXY} for disabling proxy).
-	 */
-	void setProxy(final Proxy proxy);
-	
-	/** Sets the proxy authentication.
 	 * @param auth The proxy authentication (null if the proxy does not require authentication).
+	 * @throws IllegalArgumentException
+	 * The default implementation throws an exception if proxy is null or if auth is not null and proxy is {@link Proxy#NO_PROXY}.
 	 */
-	void setProxyAuth(final PasswordAuthentication auth);
+	default void setProxy(final Proxy proxy, final PasswordAuthentication auth) {
+		if (proxy==null) {
+			throw new IllegalArgumentException("Use Proxy.NO_PROXY instead of null");
+		}
+		if (Proxy.NO_PROXY.equals(proxy) && auth!=null) {
+			throw new IllegalArgumentException("Can't set no proxy with login");
+		}
+	}
 }

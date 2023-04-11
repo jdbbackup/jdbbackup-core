@@ -114,8 +114,7 @@ public class JDbBackup {
 	private void backup(String source, File tmpFile, Collection<Saver<?>> savers, Proxy proxy, PasswordAuthentication proxyAuth) throws IOException {
 		final SourceManager sourceManager = getSourceManager(new Destination(source).getScheme());
 		if (sourceManager instanceof ProxyCompliant) {
-			((ProxyCompliant)sourceManager).setProxy(proxy);
-			((ProxyCompliant)sourceManager).setProxyAuth(proxyAuth);
+			((ProxyCompliant)sourceManager).setProxy(proxy, proxyAuth);
 		}
 		savers.forEach(s->s.prepare(sourceManager.getExtensionBuilder()));
 		sourceManager.save(source, tmpFile);
