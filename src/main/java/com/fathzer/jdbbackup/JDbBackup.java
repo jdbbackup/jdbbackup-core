@@ -44,16 +44,11 @@ public class JDbBackup {
 		destinations = new PluginRegistry<>(DestinationManager::getScheme);
 		final PluginLoader<ClassLoader> loader = new ClassLoaderPluginLoader().withExceptionConsumer(e -> log.warn("An error occured while loading plugins", e));
 		try {
-			loadPlugins(loader, loader, null);
+			sources.registerAll(loader.getPlugins(null, SourceManager.class));
+			destinations.registerAll(loader.getPlugins(null, DestinationManager.class));
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
-	}
-	
-	private <T> boolean loadPlugins(PluginLoader<T> dest, PluginLoader<T> src, T source) throws IOException {
-		boolean newSources = !getSourceManagers().registerAll(src.getPlugins(source, SourceManager.class)).isEmpty();
-		boolean newDestinations = !getDestinationManagers().registerAll(dest.getPlugins(source, DestinationManager.class)).isEmpty();
-		return newSources || newDestinations;
 	}
 
 	/** Gets the source managers registry.
