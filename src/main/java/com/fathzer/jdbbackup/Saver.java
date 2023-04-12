@@ -6,28 +6,18 @@ import java.net.PasswordAuthentication;
 import java.net.Proxy;
 import java.util.function.Function;
 
-import com.fathzer.plugin.loader.utils.PluginRegistry;
-
 class Saver<T> implements ProxyCompliant {
-	@SuppressWarnings("rawtypes")
-	private static final PluginRegistry<DestinationManager> MANAGERS = new PluginRegistry<>(DestinationManager::getScheme);
-
 	private final Destination d;
 	private T dest;
 	private final DestinationManager<T> manager;
 	
 	@SuppressWarnings("unchecked")
-	Saver(Destination d) {
-		this.manager = MANAGERS.get(d.getScheme());
+	Saver(Destination d, @SuppressWarnings("rawtypes") Function<String, DestinationManager> map) {
+		this.manager = map.apply(d.getScheme());
 		if (manager==null) {
 			throw new IllegalArgumentException("Unknown protocol: "+d.getScheme());
 		}
 		this.d = d;
-	}
-	
-	@SuppressWarnings("rawtypes")
-	static PluginRegistry<DestinationManager> getManagers() {
-		return MANAGERS;
 	}
 
 	@Override

@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.net.PasswordAuthentication;
 import java.net.Proxy;
@@ -44,13 +43,16 @@ class SaverTest {
 
 	@Test
 	void test() throws Exception {
+		@SuppressWarnings("rawtypes")
+		final PluginRegistry<DestinationManager> registry = new PluginRegistry<>(DestinationManager::getScheme);
+		
 		Destination dest = new Destination("unknown://klm");
-		assertThrows(IllegalArgumentException.class, () -> new Saver<>(dest));
+		assertThrows(IllegalArgumentException.class, () -> new Saver<>(dest, registry::get));
 		
 		KnownManager manager = new KnownManager();
-		register(manager);
+		registry.register(manager);
 		
-		final Saver<?> s = new Saver<>(new Destination("known://klm"));
+		final Saver<?> s = new Saver<>(new Destination("known://klm"), registry::get);
 		ProxySettings proxy = ProxySettings.fromString("127.0.0.1:3128");
 		s.setProxy(proxy.toProxy(), proxy.getLogin());
 		assertEquals(new InetSocketAddress("127.0.0.1",3128), manager.proxy.address());
@@ -67,13 +69,5 @@ class SaverTest {
 		assertNull(manager.proxyAuth);
 		
 		assertThrows(IllegalArgumentException.class, () -> s.setProxy(null, null));
-	}
-
-	private void register(DestinationManager<?> manager) throws NoSuchFieldException, IllegalAccessException {
-		final Field field = Saver.class.getDeclaredField("MANAGERS");
-		field.setAccessible(true);
-		@SuppressWarnings({ "unchecked", "rawtypes" })
-		PluginRegistry<DestinationManager> plugins = (PluginRegistry<DestinationManager>) field.get(null);
-		plugins.register(manager);
 	}
 }

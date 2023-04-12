@@ -27,44 +27,48 @@ import com.fathzer.plugin.loader.utils.ProxySettings;
  */
 public class JDbBackup {
 	private static final Logger log = LoggerFactory.getLogger(JDbBackup.class);
-	private static final PluginRegistry<SourceManager> SOURCES = new PluginRegistry<>(SourceManager::getScheme);
 	
-	static {
+	private final PluginRegistry<SourceManager> sources;
+	@SuppressWarnings("rawtypes")
+	private final PluginRegistry<DestinationManager> destinations;
+	
+	/** Constructor.
+	 * <br>All source and destination managers available on the calling thread class loader are loaded.
+	 * <br>To load extra plugins, you can use {@link java.util.ServiceLoader} or {@link com.fathzer.plugin.loader.PluginLoader} to instantiate them,
+	 * and then register them with the {@link PluginRegistry#register(Object)} or {@link PluginRegistry#registerAll(Collection)} methods.
+	 * @see #getDestinationManagers()
+	 * @see #getSourceManagers()
+	 */
+	public JDbBackup() {
+		sources = new PluginRegistry<>(SourceManager::getScheme);
+		destinations = new PluginRegistry<>(DestinationManager::getScheme);
+		final PluginLoader<ClassLoader> loader = new ClassLoaderPluginLoader().withExceptionConsumer(e -> log.warn("An error occured while loading plugins", e));
 		try {
-			loadPlugins(null);
+			loadPlugins(loader, loader, null);
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
 	}
 	
-	/** Loads extra plugins.
-	 * <br>Plugins allow you to extends this library to dump sources not supported natively by this library or accept new destinations.
-	 * <br>They are loaded using the {@link java.util.ServiceLoader} mechanism.
-	 * @param classLoaders The class loaders used to load the plugins. For instance a class loader over jar files in a directory is exposed in <a href="https://stackoverflow.com/questions/16102010/dynamically-loading-plugin-jars-using-serviceloader">The second option exposed in this question</a>).
-	 * @return true if the classLoaders contained a plugin.
-	 * @see SourceManager
-	 * @see DestinationManager
-	 */
-	public static boolean loadPlugins(ClassLoader classLoader) throws IOException {
-		final PluginLoader<ClassLoader> loader = new ClassLoaderPluginLoader().withExceptionConsumer(e -> log.warn("An error occured while loading plugins", e));
-		boolean newSources = !SOURCES.registerAll(loader.getPlugins(classLoader, SourceManager.class)).isEmpty();
-		boolean newDestinations = !Saver.getManagers().registerAll(loader.getPlugins(classLoader, DestinationManager.class)).isEmpty();
+	private <T> boolean loadPlugins(PluginLoader<T> dest, PluginLoader<T> src, T source) throws IOException {
+		boolean newSources = !getSourceManagers().registerAll(src.getPlugins(source, SourceManager.class)).isEmpty();
+		boolean newDestinations = !getDestinationManagers().registerAll(dest.getPlugins(source, DestinationManager.class)).isEmpty();
 		return newSources || newDestinations;
 	}
 
 	/** Gets the source managers registry.
 	 * @return a plugin registry
 	 */
-	public static PluginRegistry<SourceManager> getSourceManagers() {
-		return SOURCES;
+	public PluginRegistry<SourceManager> getSourceManagers() {
+		return sources;
 	}
 	
 	/** Gets the destination managers registry.
 	 * @return a plugin registry
 	 */
 	@SuppressWarnings("rawtypes")
-	public static PluginRegistry<DestinationManager> getDestinationManagers() {
-		return Saver.getManagers();
+	public PluginRegistry<DestinationManager> getDestinationManagers() {
+		return destinations;
 	}
 	
 	/** Makes a backup.
@@ -78,7 +82,7 @@ public class JDbBackup {
 		if (source==null || destinations==null || destinations.length==0) {
 			throw new IllegalArgumentException();
 		}
-		final List<Saver<?>> dest = Arrays.stream(destinations).map(Destination::new).map(Saver::new).collect(Collectors.toList());
+		final List<Saver<?>> dest = Arrays.stream(destinations).map(Destination::new).map(d -> new Saver<>(d, this.destinations::get)).collect(Collectors.toList());
 		final Proxy proxy = proxySettings==null ? Proxy.NO_PROXY : proxySettings.toProxy();
 		final PasswordAuthentication auth = proxySettings==null ? null : proxySettings.getLogin();
 		final File tmpFile = createTempFile();
@@ -127,7 +131,7 @@ public class JDbBackup {
 	}
 	
 	private SourceManager getSourceManager(String dbType) {
-		final SourceManager saver = SOURCES.get(dbType);
+		final SourceManager saver = sources.get(dbType);
 		if (saver==null) {
 			throw new IllegalArgumentException("Unknown data source type: "+dbType);
 		}
