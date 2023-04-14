@@ -16,7 +16,6 @@ public abstract class AbstractManagersDownloader extends AbstractPluginsDownload
 	private static final Logger log = LoggerFactory.getLogger(AbstractManagersDownloader.class);
 	
 	/** Constructor.
-	 * @param registry The registry where plugins are loaded.
 	 * @param uri The uri where to load the remote plugin registry.
 	 * @param localDirectory The folder where plugins jar files will be loaded.
 	 */
@@ -50,7 +49,7 @@ public abstract class AbstractManagersDownloader extends AbstractPluginsDownload
 
 	@Override
 	protected Map<String, URI> getURIMap() throws IOException {
-		log.info("Downloading {} registry at {}", getPluginTypeWording(), getUri());
+		log.info("Downloading {} registry from {}", getPluginTypeWording(), getUri());
 		return super.getURIMap();
 	}
 }

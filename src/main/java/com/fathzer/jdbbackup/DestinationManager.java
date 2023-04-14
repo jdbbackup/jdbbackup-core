@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.function.Function;
 
-import com.fathzer.plugin.loader.utils.ProxySettings;
-
 /** An abstract class to manage where backup are saved.
  * <br>If the manager can use a proxy to connect to a remote source, it should implement {@link ProxyCompliant} interface.
  */
@@ -28,12 +26,10 @@ public interface DestinationManager<T> {
 	T validate(final String path, Function<String,CharSequence> extensionBuilder);
 	
 	/** Sends the backup file to its final destination at the path passed in {@link #validate(String, Function)}.
-	 * <br>It is guaranteed that {@link DestinationManager#setProxy(ProxySettings)} will be called before this method.
 	 * @param in The input stream on the temporary file to save
 	 * @param size The number of bytes to save (the size of the temporary file). The manager is free to ignore this information and save all bytes available in the input stream.
 	 * @param destination The destination that was returned by {@link #validate(String, Function)}
 	 * @throws IOException If an error occurs while sending the file
-	 * @see #setProxy(ProxySettings)
 	 */
 	void send(final InputStream in, long size, T destination) throws IOException;
 }
