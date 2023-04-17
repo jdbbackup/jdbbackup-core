@@ -42,7 +42,7 @@ public class JDbBackup {
 	public JDbBackup() {
 		sources = new PluginRegistry<>(SourceManager::getScheme);
 		destinations = new PluginRegistry<>(DestinationManager::getScheme);
-		final PluginLoader<ClassLoader> loader = new ClassLoaderPluginLoader().withExceptionConsumer(e -> log.warn("An error occured while loading plugins", e));
+		final PluginLoader<ClassLoader> loader = new ClassLoaderPluginLoader().withExceptionConsumer(e -> log.warn("An error occurred while loading plugins", e));
 		try {
 			sources.registerAll(loader.getPlugins(null, SourceManager.class));
 			destinations.registerAll(loader.getPlugins(null, DestinationManager.class));

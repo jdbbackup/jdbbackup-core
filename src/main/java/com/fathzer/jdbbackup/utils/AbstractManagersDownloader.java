@@ -48,7 +48,7 @@ public abstract class AbstractManagersDownloader extends AbstractPluginsDownload
 	}
 
 	@Override
-	protected Map<String, URI> getURIMap() throws IOException {
+	public Map<String, URI> getURIMap() throws IOException {
 		log.info("Downloading {} registry from {}", getPluginTypeWording(), getUri());
 		return super.getURIMap();
 	}
