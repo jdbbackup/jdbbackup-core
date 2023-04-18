@@ -24,9 +24,6 @@ public abstract class AbstractManagersDownloader extends AbstractPluginsDownload
 	}
 
 	
-	/** Deletes all files in local directory.
-	 * @throws IOException If something went wrong
-	 */
 	@Override
 	public boolean clean() throws IOException {
 		final boolean result = super.clean();

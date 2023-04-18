@@ -23,6 +23,7 @@
 		<check-dependencies-java-version>${maven.compiler.target}</check-dependencies-java-version>
 
 		<slf-version>2.0.6</slf-version>
+		<plugin-loader-version>0.0.2</plugin-loader-version>
 		<sonar.organization>jdbbackup</sonar.organization>
 	</properties>
 
@@ -35,7 +36,7 @@
 		<dependency>
 			<groupId>com.fathzer</groupId>
 			<artifactId>plugin-loader</artifactId>
-			<version>0.0.2</version>
+			<version>${plugin-loader-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
@@ -73,6 +74,57 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.5.0</version>
+				<executions>
+					<execution>
+						<id>unpack</id>
+						<phase>package</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>com.fathzer</groupId>
+									<artifactId>plugin-loader</artifactId>
+									<version>${plugin-loader-version}</version>
+									<classifier>sources</classifier>
+									<overWrite>true</overWrite>
+									<outputDirectory>${project.build.directory}/extSourcesForJavadoc</outputDirectory>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>3.5.0</version>
+				<configuration>
+					<source>${maven.compiler.source}}</source>
+					<sourcepath>${basedir}/src/main/java:${project.build.directory}/extSourcesForJavadoc</sourcepath>
+					<docencoding>UTF-8</docencoding>
+					<overview>${basedir}/overview.html</overview>
+					<header>${project.version}</header>
+					<bottom>${project.version}</bottom>
+					<links>
+						<link>https://javadoc.io/doc/com.fathzer/plugin-loader/${plugin-loader-version}</link>
+					</links>
+				</configuration>
+				<executions>
+					<execution>
+						<id>javadoc_generation</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

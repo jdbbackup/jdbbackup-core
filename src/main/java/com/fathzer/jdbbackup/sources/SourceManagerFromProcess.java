@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fathzer.jdbbackup.SourceManager;
 
-/** A class able to data source obtain through a command line to a compressed (.gz) file.
+/** A class able to save data source obtained through a command line to a compressed (.gz) file.
  */
 public abstract class SourceManagerFromProcess implements SourceManager {
 	/** Constructor.
