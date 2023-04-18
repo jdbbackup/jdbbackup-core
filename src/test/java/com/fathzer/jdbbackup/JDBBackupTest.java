@@ -102,17 +102,17 @@ class JDBBackupTest {
 
 		// No DbName
 		assertTrue(b.tmpFile==null || !b.tmpFile.exists());
-		assertThrows(IllegalArgumentException.class, () -> b.backup(null, null, dest));
+		assertThrows(IllegalArgumentException.class, () -> b.backup(null, dest));
 		assertTrue(b.tmpFile==null || !b.tmpFile.exists());
 		
 		// Unknown DB Type
-		assertThrows(IllegalArgumentException.class, () -> b.backup(null, "unknown://jmkjmkl", dest));
+		assertThrows(IllegalArgumentException.class, () -> b.backup("unknown://jmkjmkl", dest));
 		assertTrue(b.tmpFile==null || !b.tmpFile.exists());
 		
 		
 		FakeJavaSource.shouldFail = false;
 		String db = "java://";
-		b.backup(null, db, dest);
+		b.backup(db, dest);
 		assertTrue(b.tmpFile==null || !b.tmpFile.exists());
 		
 		try (BufferedReader reader = new BufferedReader(
@@ -132,7 +132,7 @@ class JDBBackupTest {
 		SimpleLogger log = (SimpleLogger) LoggerFactory.getLogger(com.fathzer.jdbbackup.sources.FakeJavaSource.class);
 		final int previous = LogUtils.setLevel(log, "off");
 		try {
-			assertThrows(IOException.class, () -> b.backup(null, db, dest));
+			assertThrows(IOException.class, () -> b.backup(db, dest));
 		} finally {
 			LogUtils.setLevel(log, previous);
 		}
