@@ -82,7 +82,8 @@ class JDBBackupTest {
 		final fakeDestManager dm = new fakeDestManager();
 		bcp.getDestinationManagers().put("fd", dm);
 		final ProxySettings p = ProxySettings.fromString("u:p@host:1234");
-		bcp.backup(p, "pxs://", "fd://myPath");
+		bcp.setProxy(p.toProxy(), p.getLogin());
+		bcp.backup("pxs://", "fd://myPath");
 		assertEquals(p.toProxy(), sm.proxy);
 		assertEquals(p.getLogin(), sm.auth);
 		assertEquals("myPath", dm.path);
@@ -93,10 +94,10 @@ class JDBBackupTest {
 	void testOk() throws IOException {
 		final ObservableJDbBackup b = new ObservableJDbBackup();
 		// No destination
-		assertThrows(IllegalArgumentException.class, () -> b.backup(null, null, (String)null));
-		assertThrows(IllegalArgumentException.class, () -> b.backup(null, null, new String[0]));
-		assertThrows(IllegalArgumentException.class, () -> b.backup(null, "java://", (String)null));
-		assertThrows(IllegalArgumentException.class, () -> b.backup(null, "java://", new String[0]));
+		assertThrows(IllegalArgumentException.class, () -> b.backup(null, (String)null));
+		assertThrows(IllegalArgumentException.class, () -> b.backup(null, new String[0]));
+		assertThrows(IllegalArgumentException.class, () -> b.backup("java://", (String)null));
+		assertThrows(IllegalArgumentException.class, () -> b.backup("java://", new String[0]));
 		String dest = "file://"+DEST_PATH;
 
 		// No DbName

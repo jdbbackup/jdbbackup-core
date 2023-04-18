@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 
 import com.fathzer.plugin.loader.PluginLoader;
 import com.fathzer.plugin.loader.classloader.ClassLoaderPluginLoader;
-import com.fathzer.plugin.loader.utils.ProxySettings;
 
 /** A class able to perform a data source backup.
  */
@@ -32,6 +31,8 @@ public class JDbBackup {
 	private final Map<String, SourceManager> sources;
 	@SuppressWarnings("rawtypes")
 	private final Map<String, DestinationManager> destinations;
+	private Proxy proxy;
+	private PasswordAuthentication auth;
 	
 	/** Constructor.
 	 * <br>All source and destination managers available on the calling thread class loader are loaded.
@@ -43,6 +44,7 @@ public class JDbBackup {
 	public JDbBackup() {
 		sources = new HashMap<>();
 		destinations = new HashMap<>();
+		this.proxy = Proxy.NO_PROXY;
 		final PluginLoader<ClassLoader> loader = new ClassLoaderPluginLoader().withExceptionConsumer(e -> log.warn("An error occurred while loading plugins", e));
 		try {
 			loader.getPlugins(null, SourceManager.class).forEach(s -> sources.put(s.getScheme(), s));
@@ -50,6 +52,18 @@ public class JDbBackup {
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
+	}
+	
+	/** Sets the proxy.
+	 * @param proxy The proxy to use to connect to destination ({@link Proxy#NO_PROXY} for disabling proxy).
+	 * @param auth The proxy authentication (null if the proxy does not require authentication).
+	 * @throws IllegalArgumentException if proxy is null or if auth is not null and proxy is {@link Proxy#NO_PROXY}.
+	 */
+	public void setProxy(Proxy proxy, PasswordAuthentication auth) {
+		// Test parameters are ok
+		new ProxyCompliant(){}.setProxy(proxy, auth);
+		this.proxy = proxy;
+		this.auth = auth;
 	}
 
 	/** Gets the source managers registry.
@@ -68,22 +82,19 @@ public class JDbBackup {
 	}
 	
 	/** Makes a backup.
-	 * @param proxySettings The proxy used to save the data base content
 	 * @param source The address of the data base source (its format depends on the data base type)
 	 * @param destinations The addresses of the backup destinations (their format depends on the data base type)
 	 * @throws IOException If something went wrong.
 	 * @throws IllegalArgumentException if arguments are wrong.
 	 */
-	public void backup(ProxySettings proxySettings, String source, String... destinations) throws IOException {
+	public void backup(String source, String... destinations) throws IOException {
 		if (source==null || destinations==null || destinations.length==0) {
 			throw new IllegalArgumentException();
 		}
 		final List<Saver<?>> dest = Arrays.stream(destinations).map(Destination::new).map(d -> new Saver<>(d, this.destinations)).collect(Collectors.toList());
-		final Proxy proxy = proxySettings==null ? Proxy.NO_PROXY : proxySettings.toProxy();
-		final PasswordAuthentication auth = proxySettings==null ? null : proxySettings.getLogin();
 		final File tmpFile = createTempFile();
 		try {
-			backup(source, tmpFile, dest, proxy, auth);
+			backup(source, tmpFile, dest);
 		} finally {
 			Files.delete(tmpFile.toPath());
 		}
@@ -111,15 +122,15 @@ public class JDbBackup {
 		return tmpFile;
 	}
 	
-	private void backup(String source, File tmpFile, Collection<Saver<?>> savers, Proxy proxy, PasswordAuthentication proxyAuth) throws IOException {
+	private void backup(String source, File tmpFile, Collection<Saver<?>> savers) throws IOException {
 		final SourceManager sourceManager = getSourceManager(new Destination(source).getScheme());
 		if (sourceManager instanceof ProxyCompliant) {
-			((ProxyCompliant)sourceManager).setProxy(proxy, proxyAuth);
+			((ProxyCompliant)sourceManager).setProxy(proxy, auth);
 		}
 		savers.forEach(s->s.prepare(sourceManager.getExtensionBuilder()));
 		sourceManager.save(source, tmpFile);
 		for (Saver<?> s : savers) {
-			s.setProxy(proxy, proxyAuth);
+			s.setProxy(proxy, auth);
 			try (InputStream in = new BufferedInputStream(new FileInputStream(tmpFile))) {
 				s.send(in, tmpFile.length());
 			}
