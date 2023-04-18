@@ -7,11 +7,12 @@ import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.PasswordAuthentication;
 import java.net.Proxy;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 
 import org.junit.jupiter.api.Test;
 
-import com.fathzer.plugin.loader.utils.PluginRegistry;
 import com.fathzer.plugin.loader.utils.ProxySettings;
 
 class SaverTest {
@@ -44,15 +45,15 @@ class SaverTest {
 	@Test
 	void test() throws Exception {
 		@SuppressWarnings("rawtypes")
-		final PluginRegistry<DestinationManager> registry = new PluginRegistry<>(DestinationManager::getScheme);
+		final Map<String, DestinationManager> registry = new HashMap<>();
 		
 		Destination dest = new Destination("unknown://klm");
-		assertThrows(IllegalArgumentException.class, () -> new Saver<>(dest, registry::get));
+		assertThrows(IllegalArgumentException.class, () -> new Saver<>(dest, registry));
 		
 		KnownManager manager = new KnownManager();
-		registry.register(manager);
+		registry.put(manager.getScheme(), manager);
 		
-		final Saver<?> s = new Saver<>(new Destination("known://klm"), registry::get);
+		final Saver<?> s = new Saver<>(new Destination("known://klm"), registry);
 		ProxySettings proxy = ProxySettings.fromString("127.0.0.1:3128");
 		s.setProxy(proxy.toProxy(), proxy.getLogin());
 		assertEquals(new InetSocketAddress("127.0.0.1",3128), manager.proxy.address());

@@ -40,4 +40,3 @@ This library requires java 11+.
 
 ## TODO
 - test proxy is set on source manager that implements ProxyCompliant
-- Delete toBeDeleted folder and toBeDeleted task in .github/worflows/build.yml.
