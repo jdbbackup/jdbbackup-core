@@ -7,7 +7,7 @@ import java.util.function.Function;
 
 import com.fathzer.jdbbackup.utils.BasicExtensionBuilder;
 
-public final class FakeJavaSource extends SourceManagerFromProcess {
+public class FakeJavaSource extends SourceManagerFromProcess {
 	public static final List<String> CONTENT = Arrays.asList("Hello,","This is a fake db dump");
 	public static boolean shouldFail;
 	@Override
@@ -21,7 +21,6 @@ public final class FakeJavaSource extends SourceManagerFromProcess {
 			Arrays.asList("java","-cp","./target/classes"+File.pathSeparator+"./target/test-classes",FakeJavaSource.class.getName());
 		return args;
 	}
-	
 	
 	
 	@Override

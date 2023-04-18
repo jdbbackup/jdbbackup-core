@@ -39,4 +39,5 @@ This library requires java 11+.
 *WORK in progress*
 
 ## TODO
-- test proxy is set on source manager that implements ProxyCompliant
+- security notice
+- Finish how to use it

@@ -6,8 +6,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.PasswordAuthentication;
+import java.net.Proxy;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
@@ -19,6 +23,7 @@ import org.slf4j.simple.LogUtils;
 import org.slf4j.simple.SimpleLogger;
 
 import com.fathzer.jdbbackup.sources.FakeJavaSource;
+import com.fathzer.plugin.loader.utils.ProxySettings;
 
 class JDBBackupTest {
 	private static final String DEST_PATH = "./tmpTestFile.gz";
@@ -33,11 +38,56 @@ class JDBBackupTest {
 		}
 	}
 	
+	private static class ProxyCompliantFakeJavaSource extends FakeJavaSource implements ProxyCompliant {
+		private Proxy proxy = Proxy.NO_PROXY;
+		private PasswordAuthentication auth;
+
+		@Override
+		public void setProxy(Proxy proxy, PasswordAuthentication auth) {
+			ProxyCompliant.super.setProxy(proxy, auth);
+			this.proxy = proxy;
+			this.auth = auth;
+		}
+	}
+	
+	private static class fakeDestManager implements DestinationManager<String> {
+		private String path;
+		@Override
+		public String getScheme() {
+			return "fd";
+		}
+
+		@Override
+		public String validate(String path, Function<String, CharSequence> extensionBuilder) {
+			return path;
+		}
+
+		@Override
+		public void send(InputStream in, long size, String destination) throws IOException {
+			this.path = destination;
+		}
+	}
+	
 	@AfterEach
 	void cleanup() {
 		new File(DEST_PATH).delete();
 	}
 
+	@Test
+	@EnabledIf("com.fathzer.jdbbackup.JavaProcessAvailabilityChecker#available")
+	void testProxyAndMore() throws IOException {
+		final JDbBackup bcp = new JDbBackup();
+		final ProxyCompliantFakeJavaSource sm = new ProxyCompliantFakeJavaSource();
+		bcp.getSourceManagers().put("pxs", sm);
+		final fakeDestManager dm = new fakeDestManager();
+		bcp.getDestinationManagers().put("fd", dm);
+		final ProxySettings p = ProxySettings.fromString("u:p@host:1234");
+		bcp.backup(p, "pxs://", "fd://myPath");
+		assertEquals(p.toProxy(), sm.proxy);
+		assertEquals(p.getLogin(), sm.auth);
+		assertEquals("myPath", dm.path);
+	}
+	
 	@Test
 	@EnabledIf("com.fathzer.jdbbackup.JavaProcessAvailabilityChecker#available")
 	void testOk() throws IOException {
