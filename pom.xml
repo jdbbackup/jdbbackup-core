@@ -115,6 +115,7 @@
 					<links>
 						<link>https://javadoc.io/doc/com.fathzer/plugin-loader/${plugin-loader-version}</link>
 					</links>
+					<excludePackageNames>com.fathzer.plugin.*</excludePackageNames>
 				</configuration>
 				<executions>
 					<execution>
