@@ -55,7 +55,7 @@ bckp.backup("mysql://{f=dblogin.txt}@db.mycompany.com:3306/mydb", "file://{e=HOM
 This example will backup the *db* database of *db.mycompany.com* mysql server in a file contained in the backup folder of user's home directory. The name of the file will ends with the current year. The login used to connect to the database is stored in the *dblogin.txt* file.
 
 ## Security notice
-The data backed up by DBBackup passes through a temporary file. This makes it possible not to re-extract the data when you want to save them in two different destinations.  
+The data backed up by JDBBackup passes through a temporary file. This allows the same data source to be saved to multiple destinations without having to extract it again.  
 The counterpart of this architecture is that it may be necessary, depending on the level of confidentiality of the saved data, to secure access to this file.
 
 This temporary file is created in the *JDBBackup.createTempFile()* method. It creates the file in the default temporary directory and attempts to ensure that it is readable only by the owner of the account running the program.  
