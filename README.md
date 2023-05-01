@@ -29,13 +29,13 @@ This library contains the following implementation of *DestinationManager*:
 
 Additionally, here are the officially supported extra plugins:
 
-| Type | id | maven artifact | Source code | comment |
-| --- | --- | --- | --- | --- |
-| source | fake | com.fathzer::jdbbackup-fakesource | [https://github.com/jdbbackup/jdbbackup-fakesource](fakesource) | A fake source to help implement destination manager's tests |
-| destination | sftp | com.fathzer::jdbbackup-sftp | [https://github.com/jdbbackup/jdbbackup-sftp](https://github.com/jdbbackup/jdbbackup-sftp) | Sends backup to a remote server through sftp |
-| destination | dropbox | com.fathzer::jdbbackup-dropbox | [https://github.com/jdbbackup/jdbbackup-dropbox](https://github.com/jdbbackup/jdbbackup-dropbox) |Sends backup to a dropbox account |
-| destination | s3 | com.fathzer::jdbbackup-s3 | [https://github.com/jdbbackup/jdbbackup-s3](https://github.com/jdbbackup/jdbbackup-s3) | Sends backup to an Amazon S3 bucket |
-| destination | gcs | com.fathzer::jdbbackup-gcs | [https://github.com/jdbbackup/jdbbackup-gcs](https://github.com/jdbbackup/jdbbackup-gcs) | Sends backup to a Google Cloud Storage bucket |
+| Type | id | maven artifact | comment |
+| --- | --- | --- | --- |
+| src | fake | [com.fathzer::jdbbackup-fakesource](https://github.com/jdbbackup/jdbbackup-fakesource) | A fake source to help implement destination manager's tests |
+| dest | sftp | [com.fathzer::jdbbackup-sftp](https://github.com/jdbbackup/jdbbackup-sftp) | Sends backup to a remote server through sftp |
+| dest | dropbox | [com.fathzer::jdbbackup-dropbox](https://github.com/jdbbackup/jdbbackup-dropbox) |Sends backup to a dropbox account |
+| dest | s3 | [com.fathzer::jdbbackup-s3](https://github.com/jdbbackup/jdbbackup-s3) | Sends backup to an Amazon S3 bucket |
+| dest | gcs | [com.fathzer::jdbbackup-gcs](https://github.com/jdbbackup/jdbbackup-gcs) | Sends backup to a Google Cloud Storage bucket |
 
 
 **SourceManager**s and **DestinationManager**s are loaded through the [Java service loader](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/ServiceLoader.html) standard mechanism. So, it's quite easy to implement your own and use it with this library.  
