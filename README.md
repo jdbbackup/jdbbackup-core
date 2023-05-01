@@ -27,11 +27,22 @@ This library contains the following implementation of *SourceManager*:
 This library contains the following implementation of *DestinationManager*:  
 * [file](https://javadoc.io/doc/com.fathzer/jdbbackup/com/fathzer/jdbbackup/managers/local/FileManager.html).
 
-**SourceManager**s and **DestinationManager**s are loaded through the [Java service loader](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/ServiceLoader.html) standard mechanism. So, it's quite easy to implement your own and use it with this library.  
-Examples can be found in [jdbbackup repositories](https://github.com/jdbbackup).
+Additionally, here are the officially supported extra plugins:
 
-A class that can be used as command line programs is also available [here](https://github.com/jdbbackup/jdbbackup-cli).  
-A class that schedules backups is available [here](https://github.com/jdbbackup/jdbbackup-docker). This project also contains a ready to work Docker image able to schedule backups.
+| Type | id | maven artifact | Source code | comment |
+| --- | --- | --- | --- | --- |
+| source | fake | com.fathzer::jdbbackup-fakesource | [https://github.com/jdbbackup/jdbbackup-fakesource](fakesource) | A fake source to help implement destination manager's tests |
+| destination | sftp | com.fathzer::jdbbackup-sftp | [https://github.com/jdbbackup/jdbbackup-sftp](https://github.com/jdbbackup/jdbbackup-sftp) | Sends backup to a remote server through sftp |
+| destination | dropbox | com.fathzer::jdbbackup-dropbox | [https://github.com/jdbbackup/jdbbackup-dropbox](https://github.com/jdbbackup/jdbbackup-dropbox) |Sends backup to a dropbox account |
+| destination | s3 | com.fathzer::jdbbackup-s3 | [https://github.com/jdbbackup/jdbbackup-s3](https://github.com/jdbbackup/jdbbackup-s3) | Sends backup to an Amazon S3 bucket |
+| destination | gcs | com.fathzer::jdbbackup-gcs | [https://github.com/jdbbackup/jdbbackup-gcs](https://github.com/jdbbackup/jdbbackup-gcs) | Sends backup to a Google Cloud Storage bucket |
+
+
+**SourceManager**s and **DestinationManager**s are loaded through the [Java service loader](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/ServiceLoader.html) standard mechanism. So, it's quite easy to implement your own and use it with this library.  
+Official managers can be found in [jdbbackup repositories](https://github.com/jdbbackup), and can be used as example.
+
+A class that can be used as command line programs is also available at [https://github.com/jdbbackup/jdbbackup-cli](https://github.com/jdbbackup/jdbbackup-cli).  
+A class that schedules backups is available at [https://github.com/jdbbackup/jdbbackup-cli](https://github.com/jdbbackup/jdbbackup-docker). This project also contains a ready to work Docker image able to schedule backups.
 
 ## How to use it
 This library requires java 11+.
