@@ -63,4 +63,4 @@ If you think the implementation is not safe enough, you can override this method
 You may also encrypt the backup by using your own Source manager that encrypts content on the fly.
 
 ## TODO
-- In a future release implement tmp file as a Path and not a File in order to allow tmp file as a memory file, for instance
+- In a future release implement tmp file as a Path and not a File in order to allow tmp file as a memory file, for instance.
