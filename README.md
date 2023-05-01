@@ -38,8 +38,7 @@ Additionally, here are the officially supported extra plugins:
 | dest | gcs | [com.fathzer::jdbbackup-gcs](https://github.com/jdbbackup/jdbbackup-gcs) | Sends backup to a Google Cloud Storage bucket |
 
 
-**SourceManager**s and **DestinationManager**s are loaded through the [Java service loader](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/ServiceLoader.html) standard mechanism. So, it's quite easy to implement your own and use it with this library.  
-Official managers can be found in [jdbbackup repositories](https://github.com/jdbbackup), and can be used as example.
+**SourceManager**s and **DestinationManager**s are loaded through the [Java service loader](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/ServiceLoader.html) standard mechanism. So, it's quite easy to implement your own and use it with this library (Official managers can be used as example).
 
 A class that can be used as command line programs is also available at [https://github.com/jdbbackup/jdbbackup-cli](https://github.com/jdbbackup/jdbbackup-cli).  
 A class that schedules backups is available at [https://github.com/jdbbackup/jdbbackup-cli](https://github.com/jdbbackup/jdbbackup-docker). This project also contains a ready to work Docker image able to schedule backups.
@@ -47,8 +46,21 @@ A class that schedules backups is available at [https://github.com/jdbbackup/jdb
 ## How to use it
 This library requires java 11+.
 
-*WORK in progress*
+Here is a usage example:  
+```java
+final JDbBackup bckp = new JDbBackup();
+bckp.backup("mysql://{f=dblogin.txt}@db.mycompany.com:3306/mydb", "file://{e=HOME}/backup/db-{d=yyyy}")
+```
+
+This example will backup the *db* database of *db.mycompany.com* mysql server in a file contained in the backup folder of user's home directory. The name of the file will ends with the current year. The login used to connect to the database is stored in the *dblogin.txt* file.
+
+## Security notice
+The data backed up by DBBackup passes through a temporary file. This makes it possible not to re-extract the data when you want to save them in two different destinations.  
+The counterpart of this architecture is that it may be necessary, depending on the level of confidentiality of the saved data, to secure access to this file.
+
+This temporary file is created in the *JDBBackup.createTempFile()* method. It creates the file in the default temporary directory and attempts to ensure that it is readable only by the owner of the account running the program.  
+If you think the implementation is not safe enough, you can override this method.  
+You may also encrypt the backup by using your own Source manager that encrypts content on the fly.
 
 ## TODO
-- security notice
-- Finish how to use it
+- In a future release implement tmp file as a Path and not a File in order to allow tmp file as a memory file, for instance
