@@ -19,7 +19,9 @@ class DestinationTest {
 		assertEquals("xxx",dest.getScheme());
 		assertEquals("",dest.getPath());
 
+		assertThrows(IllegalArgumentException.class, () -> new Destination(null));
 		assertThrows(IllegalArgumentException.class, () -> new Destination(""));
 		assertThrows(IllegalArgumentException.class, () -> new Destination("gdfsjmlk"));
+		assertThrows(IllegalArgumentException.class, () -> new Destination("x:/y"));
 	}
 }

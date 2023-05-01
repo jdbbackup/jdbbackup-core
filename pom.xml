@@ -1,9 +1,11 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.fathzer</groupId>
 		<artifactId>parent-pom</artifactId>
-		<version>1.0.5</version>
+		<version>1.0.6</version>
 	</parent>
 	<artifactId>jdbbackup-core</artifactId>
 	<version>1.0.0</version>
@@ -20,7 +22,9 @@
 		<maven.compiler.release>${maven.compiler.target}</maven.compiler.release>
 		<check-dependencies-java-version>${maven.compiler.target}</check-dependencies-java-version>
 
-		<slf-version>1.7.36</slf-version>
+		<slf-version>2.0.6</slf-version>
+		<plugin-loader-version>0.0.2</plugin-loader-version>
+		<sonar.organization>jdbbackup</sonar.organization>
 	</properties>
 
 	<dependencies>
@@ -30,9 +34,9 @@
 			<version>${slf-version}</version>
 		</dependency>
 		<dependency>
-			<groupId>info.picocli</groupId>
-			<artifactId>picocli</artifactId>
-			<version>4.7.1</version>
+			<groupId>com.fathzer</groupId>
+			<artifactId>plugin-loader</artifactId>
+			<version>${plugin-loader-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
@@ -52,6 +56,12 @@
 			<version>${slf-version}</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.squareup.okhttp3</groupId>
+			<artifactId>mockwebserver</artifactId>
+			<version>4.10.0</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
@@ -60,15 +70,62 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<!-- JUnit 5 requires Surefire version 2.22.0 or higher -->
 				<version>2.22.2</version>
-				<configuration>
-					<systemPropertyVariables>
-						<org.slf4j.simpleLogger.log.org.reflections>off</org.slf4j.simpleLogger.log.org.reflections>
-					</systemPropertyVariables>
-				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.5.0</version>
+				<executions>
+					<execution>
+						<id>unpack</id>
+						<phase>package</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>com.fathzer</groupId>
+									<artifactId>plugin-loader</artifactId>
+									<version>${plugin-loader-version}</version>
+									<classifier>sources</classifier>
+									<overWrite>true</overWrite>
+									<outputDirectory>${project.build.directory}/extSourcesForJavadoc</outputDirectory>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>3.5.0</version>
+				<configuration>
+					<source>${maven.compiler.source}}</source>
+					<sourcepath>${basedir}/src/main/java:${project.build.directory}/extSourcesForJavadoc</sourcepath>
+					<docencoding>UTF-8</docencoding>
+					<overview>${basedir}/overview.html</overview>
+					<header>${project.version}</header>
+					<bottom>${project.version}</bottom>
+					<links>
+						<link>https://javadoc.io/doc/com.fathzer/plugin-loader/${plugin-loader-version}</link>
+					</links>
+					<excludePackageNames>com.fathzer.plugin.*</excludePackageNames>
+				</configuration>
+				<executions>
+					<execution>
+						<id>javadoc_generation</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
