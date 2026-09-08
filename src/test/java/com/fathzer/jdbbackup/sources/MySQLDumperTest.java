@@ -38,6 +38,42 @@ class MySQLDumperTest {
 		
 		assertEquals("x.sql.gz", new MySQLDumper().getExtensionBuilder().apply("x"));
 	}
+
+	@Test
+	void databasesOptionIsPresent() {
+		MySQLObservableDumper d = new MySQLObservableDumper();
+		List<String> command = d.getCommand("mysql://u:p@host:3306/db");
+		assertTrue(command.contains("--databases"), "Command should contain --databases");
+		assertTrue(command.contains("--add-drop-database"), "Command should contain --add-drop-database");
+	}
+
+	@Test
+	void queryParameters() {
+		MySQLObservableDumper d = new MySQLObservableDumper();
+		List<String> command = d.getCommand("mysql://u:p@host:3306/db?single-transaction&routines&events&hex-blob&default-character-set=utf8mb4");
+		assertTrue(command.contains("--single-transaction"), "Should contain --single-transaction");
+		assertTrue(command.contains("--routines"), "Should contain --routines");
+		assertTrue(command.contains("--events"), "Should contain --events");
+		assertTrue(command.contains("--hex-blob"), "Should contain --hex-blob");
+		assertTrue(command.contains("--default-character-set=utf8mb4"), "Should contain --default-character-set=utf8mb4");
+	}
+
+	@Test
+	void queryParametersDisabled() {
+		MySQLObservableDumper d = new MySQLObservableDumper();
+		List<String> command = d.getCommand("mysql://u:p@host:3306/db?single-transaction=false");
+		assertFalse(command.contains("--single-transaction"), "Should not contain --single-transaction");
+	}
+
+	@Test
+	void noQueryParameters() {
+		MySQLObservableDumper d = new MySQLObservableDumper();
+		List<String> command = d.getCommand("mysql://u:p@host:3306/db");
+		assertFalse(command.contains("--single-transaction"), "Should not contain --single-transaction by default");
+		assertFalse(command.contains("--routines"), "Should not contain --routines by default");
+		assertFalse(command.contains("--events"), "Should not contain --events by default");
+		assertFalse(command.contains("--hex-blob"), "Should not contain --hex-blob by default");
+	}
 	
 	private void expect(List<String> command, String user, String pwd, String host, int port, String db) {
 		assertAll(command.toString(),
@@ -46,6 +82,7 @@ class MySQLDumperTest {
 				() -> assertTrue(command.contains("--password="+pwd)),
 				() -> assertTrue(command.contains("--host="+host)),
 				() -> assertTrue(command.contains("--port="+port)),
+				() -> assertTrue(command.contains("--databases")),
 				() -> assertTrue(command.contains(db))
 		);
 	}

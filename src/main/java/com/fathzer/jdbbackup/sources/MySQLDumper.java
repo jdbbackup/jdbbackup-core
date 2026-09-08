@@ -9,8 +9,22 @@ import com.fathzer.plugin.loader.utils.LoginParser;
 
 /** A source manager that dumps MYSQL database.
  * <br>It requires mysqldump to be installed on the machine.
- * <br>The URI format is mysql://<i>user</i>:<i>pwd</i>@<i>host</i>[:<i>port</i>]/<i>database</i>
- * <br>Default port is 3306
+ * <br>The URI format is {@code mysql://<i>user</i>:<i>pwd</i>@<i>host</i>[:<i>port</i>]/<i>database</i>[?<i>query</i>]}
+ * <br>Default port is 3306.
+ * <br>The following optional query parameters are supported (all are opt-in, none is enabled by default):
+ * <ul>
+ *   <li><b>single-transaction</b> &ndash; adds {@code --single-transaction} to mysqldump. This creates a consistent
+ *       snapshot of InnoDB tables without locking them. Recommended for InnoDB databases. Has no effect on MyISAM tables.</li>
+ *   <li><b>routines</b> &ndash; adds {@code --routines} to mysqldump. Includes stored procedures and functions in the dump.</li>
+ *   <li><b>events</b> &ndash; adds {@code --events} to mysqldump. Includes scheduled events in the dump.</li>
+ *   <li><b>hex-blob</b> &ndash; adds {@code --hex-blob} to mysqldump. Dumps binary columns in hexadecimal notation,
+ *       which is safer for binary data but produces larger output.</li>
+ *   <li><b>default-character-set</b>=<i>charset</i> &ndash; adds {@code --default-character-set=<i>charset</i>} to mysqldump.
+ *       Forces the character set used for the dump (e.g. {@code utf8mb4}).</li>
+ * </ul>
+ * <br>Boolean parameters (single-transaction, routines, events, hex-blob) can be set to {@code false} to explicitly
+ * disable them, e.g. {@code ?single-transaction=false}. Their absence is equivalent to {@code false}.
+ * <br>Example: {@code mysql://user:pwd@host:3306/mydb?single-transaction&routines&events&default-character-set=utf8mb4}
  */
 public class MySQLDumper extends SourceManagerFromProcess {
 	@Override
@@ -32,8 +46,57 @@ public class MySQLDumper extends SourceManagerFromProcess {
 		commands.add("--user="+login.getUserName());
 		commands.add("--password="+new String(login.getPassword()));
 		commands.add("--add-drop-database");
+		commands.add("--databases");
+		// Optional parameters from query string
+		String query = params.getQuery();
+		if (query != null) {
+			addOption(commands, query, "single-transaction", "--single-transaction", null);
+			addOption(commands, query, "routines", "--routines", null);
+			addOption(commands, query, "events", "--events", null);
+			addOption(commands, query, "hex-blob", "--hex-blob", null);
+			addOption(commands, query, "default-character-set", "--default-character-set", null);
+		}
 		commands.add(dbName);
 		return commands;
+	}
+
+	/** Adds an option to the command if the corresponding query parameter is present and not set to false.
+	 * @param commands the command list to append to.
+	 * @param query the raw query string.
+	 * @param paramName the query parameter name.
+	 * @param option the mysqldump option to add (without value).
+	 * @param ignored not used for boolean options.
+	 */
+	private void addOption(List<String> commands, String query, String paramName, String option, String ignored) {
+		String value = getQueryParam(query, paramName);
+		if (value != null && !isFalse(value)) {
+			if (paramName.equals("default-character-set")) {
+				commands.add(option + "=" + value);
+			} else {
+				commands.add(option);
+			}
+		}
+	}
+
+	/** Extracts the value of a query parameter from a raw query string.
+	 * @param query the raw query string (e.g. "single-transaction&routines=false&default-character-set=utf8mb4").
+	 * @param paramName the parameter name to look for.
+	 * @return the parameter value (empty string for flag-style params like "single-transaction"), or null if not present. */
+	private static String getQueryParam(String query, String paramName) {
+		for (String pair : query.split("&")) {
+			int eq = pair.indexOf('=');
+			String name = eq >= 0 ? pair.substring(0, eq) : pair;
+			String value = eq >= 0 ? pair.substring(eq + 1) : "";
+			if (name.equals(paramName)) {
+				return value;
+			}
+		}
+		return null;
+	}
+
+	/** Returns true if the value represents "false" (case-insensitive). */
+	private static boolean isFalse(String value) {
+		return "false".equalsIgnoreCase(value);
 	}
 	
 	private int getPort(URI uri) {
@@ -43,7 +106,7 @@ public class MySQLDumper extends SourceManagerFromProcess {
 		}
 		return port;
 	}
-	
+
 	private String getDBName(URI uri) {
 		String result = uri.getPath();
 		if (result.startsWith("/")) {
