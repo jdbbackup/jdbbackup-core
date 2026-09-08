@@ -10,11 +10,16 @@ import java.net.PasswordAuthentication;
 import java.net.Proxy;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -27,7 +32,7 @@ import com.fathzer.plugin.loader.classloader.ClassLoaderPluginLoader;
  */
 public class JDbBackup {
 	private static final Logger log = LoggerFactory.getLogger(JDbBackup.class);
-	
+
 	private final Map<String, SourceManager> sources;
 	@SuppressWarnings("rawtypes")
 	private final Map<String, DestinationManager> destinations;
@@ -101,25 +106,89 @@ public class JDbBackup {
 	}
 	
 	/** Creates the temporary file that will be used by the source manager to create the backup.
+	 * <BR>The file is created in a dedicated, private temporary directory (owner-only access) to avoid
+	 * exposing sensitive backup data in a publicly writable directory like {@code /tmp}.
 	 * @return a File.
 	 * @throws IOException If something went wrong.
 	 */
 	protected File createTempFile() throws IOException {
-		final File tmpFile = Files.createTempFile("JDBBackup", ".gz").toFile();
-		if(!FileSystems.getDefault().supportedFileAttributeViews().contains("posix")) {
+		final Path tmpFile = Files.createTempFile(getSecureTempDir(), "JDBBackup", ".gz", getSecureFileAttributes());
+		if(!isPosix()) {
 			// On Posix compliant systems, java create tmp files with read/write rights only for user
 			// Let do the same on non Posix systems
-			final boolean readUserOnly = tmpFile.setReadable(true, true);
-			final boolean writeUserOnly = tmpFile.setWritable(true, true);
+			final boolean readUserOnly = tmpFile.toFile().setReadable(true, true);
+			final boolean writeUserOnly = tmpFile.toFile().setWritable(true, true);
 			if (! (readUserOnly && writeUserOnly)) {
-				LoggerFactory.getLogger(getClass()).warn("Fail to apply security restrictions on temporary file. Restrict read to user: {}, restrict write to user: {}", readUserOnly, writeUserOnly);
+				log.warn("Fail to apply security restrictions on temporary file. Restrict read to user: {}, restrict write to user: {}", readUserOnly, writeUserOnly);
 			}
-			if (tmpFile.setExecutable(false, false)) {
-				LoggerFactory.getLogger(getClass()).debug("Impossible to set temporary file not executable on this system");
+			if (tmpFile.toFile().setExecutable(false, false)) {
+				log.debug("Impossible to set temporary file not executable on this system");
 			}
 		}
-		tmpFile.deleteOnExit();
-		return tmpFile;
+		tmpFile.toFile().deleteOnExit();
+		return tmpFile.toFile();
+	}
+
+	/** The private temporary directory where backup temp files are created.
+	 * <BR>It is created once with owner-only permissions, so files inside it are protected even on
+	 * publicly writable parent directories.
+	 */
+	@SuppressWarnings("java:S3077") // volatile is sufficient: written once, then only read (double-checked locking idiom)
+	private static volatile Path secureTempDir;
+
+	/** Returns the private temporary directory, creating it if necessary (double-checked locking).
+	 * @return a {@link Path} to a directory with owner-only access.
+	 * @throws IOException if the directory could not be created. */
+	private static Path getSecureTempDir() throws IOException {
+		if (secureTempDir == null) {
+			synchronized (JDbBackup.class) {
+				if (secureTempDir == null) {
+					Path dir = createSecureTempDir();
+					dir.toFile().deleteOnExit();
+					secureTempDir = dir;
+				}
+			}
+		}
+		return secureTempDir;
+	}
+
+	/** Creates a private temporary directory with owner-only permissions.
+	 * <BR>On POSIX systems, permissions are set atomically at creation time.
+	 * On non-POSIX systems, there is no atomic way to set permissions, so we fall back to
+	 * {@link Files#createTempDirectory} and manually restrict access.
+	 * @return the created directory path.
+	 * @throws IOException if the directory could not be created. */
+	@SuppressWarnings("java:S5443") // Publicly writable directory: no atomic alternative on non-POSIX systems
+	private static Path createSecureTempDir() throws IOException {
+		if (isPosix()) {
+			FileAttribute<Set<PosixFilePermission>> attr = PosixFilePermissions.asFileAttribute(
+					Set.of(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE, PosixFilePermission.OWNER_EXECUTE));
+			return Files.createTempDirectory("jdbbackup", attr);
+		}
+		// Non-POSIX: create the directory, then restrict access to owner only.
+		Path dir = Files.createTempDirectory("jdbbackup");
+		File dirFile = dir.toFile();
+		if (!dirFile.setReadable(true, true) || !dirFile.setWritable(true, true) || !dirFile.setExecutable(true, true)) {
+			log.warn("Failed to restrict access to temporary directory {}", dir);
+		}
+		return dir;
+	}
+
+	/** Returns file attributes for owner-only read/write permissions on POSIX systems, or null on non-POSIX.
+	 * @return the file attributes, or null if POSIX is not supported. */
+	private static FileAttribute<?>[] getSecureFileAttributes() {
+		if (isPosix()) {
+			FileAttribute<Set<PosixFilePermission>> attr = PosixFilePermissions.asFileAttribute(
+					Set.of(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE));
+			return new FileAttribute<?>[] { attr };
+		}
+		return new FileAttribute<?>[0];
+	}
+
+	/** Returns whether the default file system supports POSIX file attributes.
+	 * @return {@code true} if POSIX file attribute views are supported. */
+	private static boolean isPosix() {
+		return FileSystems.getDefault().supportedFileAttributeViews().contains("posix");
 	}
 	
 	private void backup(String source, File tmpFile, Collection<Saver<?>> savers) throws IOException {

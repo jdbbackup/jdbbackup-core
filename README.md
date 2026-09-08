@@ -22,7 +22,20 @@ For example, the pattern {d=yyyy} will be replaced by the year on 4 characters a
 ## SourceManager and DestinationManagers implementations
 
 This library contains the following implementation of *SourceManager*:  
-* [mysql](https://javadoc.io/doc/com.fathzer/jdbbackup/com/fathzer/jdbbackup/sources/MySQLDumper.html). Please note it uses the mysqldump command which must be installed on the machine running this library.
+* [mysql](https://javadoc.io/doc/com.fathzer/jdbbackup/com/fathzer/jdbbackup/sources/MySQLDumper.html). Please note it uses the mysqldump command which must be installed on the machine running this library.  
+  The URI format is `mysql://<i>user</i>:<i>pwd</i>@<i>host</i>[:<i>port</i>]/<i>database</i>[?<i>query</i>]`.  
+  The following optional query parameters are supported (all opt-in, none enabled by default):
+  
+  | Parameter | Description |
+  | --- | --- |
+  | `single-transaction` | Adds `--single-transaction` to mysqldump. Creates a consistent snapshot of InnoDB tables without locking. Recommended for InnoDB databases. |
+  | `routines` | Adds `--routines` to mysqldump. Includes stored procedures and functions in the dump. |
+  | `events` | Adds `--events` to mysqldump. Includes scheduled events in the dump. |
+  | `hex-blob` | Adds `--hex-blob` to mysqldump. Dumps binary columns in hexadecimal notation (safer for binary data, larger output). |
+  | `default-character-set=<i>charset</i>` | Adds `--default-character-set=<i>charset</i>` to mysqldump. Forces the character set used for the dump (e.g. `utf8mb4`). |
+  
+  Boolean parameters can be set to `false` to explicitly disable them (e.g. `?single-transaction=false`). Their absence is equivalent to `false`.  
+  Example: `mysql://user:pwd@host:3306/mydb?single-transaction&routines&events&default-character-set=utf8mb4`
 
 This library contains the following implementation of *DestinationManager*:  
 * [file](https://javadoc.io/doc/com.fathzer/jdbbackup/com/fathzer/jdbbackup/managers/local/FileManager.html).
@@ -58,7 +71,7 @@ This example will backup the *db* database of *db.mycompany.com* mysql server in
 The data backed up by JDBBackup passes through a temporary file. This allows the same data source to be saved to multiple destinations without having to extract it again.  
 The counterpart of this architecture is that it may be necessary, depending on the level of confidentiality of the saved data, to secure access to this file.
 
-This temporary file is created in the *JDBBackup.createTempFile()* method. It creates the file in the default temporary directory and attempts to ensure that it is readable only by the owner of the account running the program.  
+This temporary file is created in the *JDBBackup.createTempFile()* method. It creates a private temporary directory with owner-only permissions and stores the file inside it.  
 If you think the implementation is not safe enough, you can override this method.  
 You may also encrypt the backup by using your own Source manager that encrypts content on the fly.
 
