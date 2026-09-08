@@ -50,11 +50,11 @@ public class MySQLDumper extends SourceManagerFromProcess {
 		// Optional parameters from query string
 		String query = params.getQuery();
 		if (query != null) {
-			addOption(commands, query, "single-transaction", "--single-transaction", null);
-			addOption(commands, query, "routines", "--routines", null);
-			addOption(commands, query, "events", "--events", null);
-			addOption(commands, query, "hex-blob", "--hex-blob", null);
-			addOption(commands, query, "default-character-set", "--default-character-set", null);
+			addOption(commands, query, "single-transaction", "--single-transaction");
+			addOption(commands, query, "routines", "--routines");
+			addOption(commands, query, "events", "--events");
+			addOption(commands, query, "hex-blob", "--hex-blob");
+			addOption(commands, query, "default-character-set", "--default-character-set");
 		}
 		commands.add(dbName);
 		return commands;
@@ -67,7 +67,7 @@ public class MySQLDumper extends SourceManagerFromProcess {
 	 * @param option the mysqldump option to add (without value).
 	 * @param ignored not used for boolean options.
 	 */
-	private void addOption(List<String> commands, String query, String paramName, String option, String ignored) {
+	private void addOption(List<String> commands, String query, String paramName, String option) {
 		String value = getQueryParam(query, paramName);
 		if (value != null && !isFalse(value)) {
 			if (paramName.equals("default-character-set")) {
